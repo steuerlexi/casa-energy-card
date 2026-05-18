@@ -66,12 +66,6 @@ class CasaEnergyCard extends HTMLElement {
         daily_export: 'sensor.sonnenbatterie_81923_einspeisung_tagesertrag',
         daily_b2500_in: 'sensor.b2500_total_daily_energy_in',
         daily_b2500_out: 'sensor.b2500_total_daily_energy_out',
-        load_klima: 'sensor.shelly_klimaanlage_switch_0_power',
-        load_server: 'sensor.plug_proxmoxserver_power',
-        load_warmwasser: 'sensor.plug_warmwasserspeicher_power',
-        load_trockner: 'sensor.plug_trockner_power',
-        load_garage: 'sensor.shelly_garage_switch_0_power',
-        load_garten: 'sensor.shelly_garten_leistung',
         daily_load: 'sensor.sonnenbatterie_81923_consumption_avg'
       }
     };
@@ -275,7 +269,6 @@ class CasaEnergyCard extends HTMLElement {
     this._drawStaticElements(svg, svgNS);
     this._drawFlowPaths(svg, svgNS);
     this._drawBatteryBoxes(svg, svgNS);
-    this._drawSubLoads(svg, svgNS);
 
     card.appendChild(svg);
     this.appendChild(card);
@@ -568,75 +561,7 @@ class CasaEnergyCard extends HTMLElement {
   }
 
   _drawSubLoads(svg, ns) {
-    const e = this._entities;
-    const loads = [
-      { x: 720, y: 260, icon: 'mdi:air-conditioner', label: 'Klima', entity: e.load_klima, valueId: 'load-klima' },
-      { x: 720, y: 310, icon: 'mdi:monitor', label: 'Server', entity: e.load_server, valueId: 'load-server' },
-      { x: 720, y: 360, icon: 'mdi:water-boiler', label: 'Warmw.', entity: e.load_warmwasser, valueId: 'load-warmwasser' },
-      { x: 720, y: 410, icon: 'mdi:tumble-dryer', label: 'Trockner', entity: e.load_trockner, valueId: 'load-trockner' },
-      { x: 720, y: 460, icon: 'mdi:garage', label: 'Garage', entity: e.load_garage, valueId: 'load-garage' },
-      { x: 720, y: 510, icon: 'mdi:tree-outline', label: 'Garten', entity: e.load_garten, valueId: 'load-garten' },
-    ];
-
-    this._subLoadElements = [];
-
-    for (const load of loads) {
-      if (!load.entity) continue;
-
-      const g = document.createElementNS(ns, 'g');
-      g.setAttribute('transform', `translate(${load.x}, ${load.y})`);
-
-      // Hit area
-      const hitArea = document.createElementNS(ns, 'rect');
-      hitArea.setAttribute('x', '-72');
-      hitArea.setAttribute('y', '-16');
-      hitArea.setAttribute('width', '144');
-      hitArea.setAttribute('height', '32');
-      hitArea.setAttribute('fill', 'transparent');
-      hitArea.setAttribute('cursor', 'pointer');
-      hitArea.setAttribute('rx', '4');
-      this._attachClickHandler(hitArea, load.entity);
-      g.appendChild(hitArea);
-
-      const rect = document.createElementNS(ns, 'rect');
-      rect.setAttribute('x', '-70');
-      rect.setAttribute('y', '-14');
-      rect.setAttribute('width', '140');
-      rect.setAttribute('height', '28');
-      rect.setAttribute('rx', '4');
-      rect.setAttribute('fill', 'var(--card-background-color, #fff)');
-      rect.setAttribute('stroke', this._config.colors.consumption);
-      rect.setAttribute('stroke-width', '1');
-      rect.setAttribute('stroke-opacity', '0.3');
-      g.appendChild(rect);
-
-      const labelText = document.createElementNS(ns, 'text');
-      labelText.setAttribute('text-anchor', 'start');
-      labelText.setAttribute('x', '-60');
-      labelText.setAttribute('dy', '4');
-      labelText.setAttribute('font-size', '10');
-      labelText.setAttribute('fill', this._config.colors.text);
-      labelText.textContent = load.label;
-      labelText.style.pointerEvents = 'none';
-      g.appendChild(labelText);
-
-      const valueText = document.createElementNS(ns, 'text');
-      valueText.setAttribute('text-anchor', 'end');
-      valueText.setAttribute('x', '60');
-      valueText.setAttribute('dy', '4');
-      valueText.setAttribute('font-size', '10');
-      valueText.setAttribute('font-weight', '600');
-      valueText.setAttribute('fill', this._config.colors.consumption);
-      valueText.setAttribute('id', load.valueId);
-      valueText.textContent = '0 W';
-      valueText.style.cursor = 'pointer';
-      valueText.style.pointerEvents = 'auto';
-      this._attachClickHandler(valueText, load.entity);
-      g.appendChild(valueText);
-
-      svg.appendChild(g);
-      this._subLoadElements.push({ group: g, data: load });
-    }
+    // Sub-loads removed per user request
   }
 
   _updateValues() {
@@ -702,22 +627,6 @@ class CasaEnergyCard extends HTMLElement {
     this._setText('bat-b2500-2-power', this._formatValue(Math.abs(batB2500_2Power)));
     this._setText('bat-b2500-2-soc', `${Math.round(batB2500_2Soc)}%`);
     this._setBatteryBar('bat-b2500-2-bar', batB2500_2Soc, batB2500_2Power < 0);
-
-    // Sub-loads
-    const loads = [
-      { id: 'load-klima', entity: e.load_klima },
-      { id: 'load-server', entity: e.load_server },
-      { id: 'load-warmwasser', entity: e.load_warmwasser },
-      { id: 'load-trockner', entity: e.load_trockner },
-      { id: 'load-garage', entity: e.load_garage },
-      { id: 'load-garten', entity: e.load_garten },
-    ];
-
-    for (const load of loads) {
-      if (!load.entity) continue;
-      const val = this._getState(load.entity);
-      this._setText(load.id, val > 0 ? this._formatValue(val) : '-');
-    }
 
     // Update flow visibility and colors
     this._updateFlows();
@@ -932,12 +841,6 @@ class CasaEnergyCard extends HTMLElement {
         {
           type: 'grid',
           schema: [
-            { name: 'entities.load_klima', selector: { entity: { domain: ['sensor'] } }, label: 'Klima' },
-            { name: 'entities.load_server', selector: { entity: { domain: ['sensor'] } }, label: 'Server' },
-            { name: 'entities.load_warmwasser', selector: { entity: { domain: ['sensor'] } }, label: 'Warmwasser' },
-            { name: 'entities.load_trockner', selector: { entity: { domain: ['sensor'] } }, label: 'Trockner' },
-            { name: 'entities.load_garage', selector: { entity: { domain: ['sensor'] } }, label: 'Garage' },
-            { name: 'entities.load_garten', selector: { entity: { domain: ['sensor'] } }, label: 'Garten' },
           ]
         },
         {
@@ -977,12 +880,6 @@ class CasaEnergyCard extends HTMLElement {
         daily_export: 'sensor.sonnenbatterie_81923_einspeisung_tagesertrag',
         daily_b2500_in: 'sensor.b2500_total_daily_energy_in',
         daily_b2500_out: 'sensor.b2500_total_daily_energy_out',
-        load_klima: 'sensor.shelly_klimaanlage_switch_0_power',
-        load_server: 'sensor.plug_proxmoxserver_power',
-        load_warmwasser: 'sensor.plug_warmwasserspeicher_power',
-        load_trockner: 'sensor.plug_trockner_power',
-        load_garage: 'sensor.shelly_garage_switch_0_power',
-        load_garten: 'sensor.shelly_garten_leistung',
       }
     };
   }
