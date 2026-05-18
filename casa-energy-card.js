@@ -178,7 +178,7 @@ class CasaEnergyCard extends HTMLElement {
     this.innerHTML = '';
 
     const card = document.createElement('ha-card');
-    card.style.padding = '16px';
+    card.style.padding = '8px';
     card.style.background = this._config.colors.background;
     card.style.color = this._config.colors.text;
     card.style.display = 'block';
@@ -190,14 +190,14 @@ class CasaEnergyCard extends HTMLElement {
       title.textContent = this._config.title;
       title.style.fontSize = '18px';
       title.style.fontWeight = '500';
-      title.style.marginBottom = '12px';
+      title.style.marginBottom = '4px';
       title.style.textAlign = 'center';
       card.appendChild(title);
     }
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', '0 0 800 360');
+    svg.setAttribute('viewBox', '0 0 800 270');
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svg.style.width = '100%';
     svg.style.height = 'auto';
@@ -291,25 +291,14 @@ class CasaEnergyCard extends HTMLElement {
     circle.setAttribute('stroke-width', '2');
     g.appendChild(circle);
 
-    const fo = document.createElementNS(ns, 'foreignObject');
-    fo.setAttribute('x', '-16');
-    fo.setAttribute('y', '-16');
-    fo.setAttribute('width', '32');
-    fo.setAttribute('height', '32');
-    const iconDiv = document.createElement('div');
-    iconDiv.style.width = '32px';
-    iconDiv.style.height = '32px';
-    iconDiv.style.display = 'flex';
-    iconDiv.style.alignItems = 'center';
-    iconDiv.style.justifyContent = 'center';
-    const iconEl = document.createElement('ha-icon');
-    iconEl.setAttribute('icon', this._getOpenMojiIcon(icon));
-    iconEl.style.width = '28px';
-    iconEl.style.height = '28px';
-    iconEl.style.color = color;
-    iconDiv.appendChild(iconEl);
-    fo.appendChild(iconDiv);
-    g.appendChild(fo);
+    const iconText = document.createElementNS(ns, 'text');
+    iconText.setAttribute('text-anchor', 'middle');
+    iconText.setAttribute('dy', '5');
+    iconText.setAttribute('font-size', '20');
+    iconText.textContent = this._getIconChar(icon);
+    iconText.setAttribute('fill', color);
+    iconText.style.pointerEvents = 'none';
+    g.appendChild(iconText);
 
     const labelText = document.createElementNS(ns, 'text');
     labelText.setAttribute('text-anchor', 'middle');
@@ -365,25 +354,14 @@ class CasaEnergyCard extends HTMLElement {
     rect.setAttribute('stroke-width', '2');
     g.appendChild(rect);
 
-    const fo = document.createElementNS(ns, 'foreignObject');
-    fo.setAttribute('x', '-16');
-    fo.setAttribute('y', '-16');
-    fo.setAttribute('width', '32');
-    fo.setAttribute('height', '32');
-    const iconDiv = document.createElement('div');
-    iconDiv.style.width = '32px';
-    iconDiv.style.height = '32px';
-    iconDiv.style.display = 'flex';
-    iconDiv.style.alignItems = 'center';
-    iconDiv.style.justifyContent = 'center';
-    const iconEl = document.createElement('ha-icon');
-    iconEl.setAttribute('icon', this._getOpenMojiIcon('mdi:current-ac'));
-    iconEl.style.width = '28px';
-    iconEl.style.height = '28px';
-    iconEl.style.color = this._config.colors.inverter;
-    iconDiv.appendChild(iconEl);
-    fo.appendChild(iconDiv);
-    g.appendChild(fo);
+    const iconText = document.createElementNS(ns, 'text');
+    iconText.setAttribute('text-anchor', 'middle');
+    iconText.setAttribute('dy', '5');
+    iconText.setAttribute('font-size', '20');
+    iconText.textContent = this._getIconChar('mdi:current-ac');
+    iconText.setAttribute('fill', this._config.colors.inverter);
+    iconText.style.pointerEvents = 'none';
+    g.appendChild(iconText);
 
     const statusText = document.createElementNS(ns, 'text');
     statusText.setAttribute('text-anchor', 'middle');
@@ -399,23 +377,23 @@ class CasaEnergyCard extends HTMLElement {
     return g;
   }
 
-  _getOpenMojiIcon(iconName) {
+  _getIconChar(iconName) {
     const iconMap = {
-      'mdi:solar-power': 'openmoji:2600',
-      'mdi:solar-panel': 'openmoji:2600',
-      'mdi:transmission-tower': 'openmoji:26a1',
-      'mdi:home-lightning-bolt': 'openmoji:1f3e0',
-      'mdi:current-ac': 'openmoji:1f50c',
-      'mdi:battery': 'openmoji:1f50b',
-      'mdi:battery-charging': 'openmoji:1f50b',
-      'mdi:air-conditioner': 'openmoji:2744',
-      'mdi:monitor': 'openmoji:1f5a5',
-      'mdi:water-boiler': 'openmoji:2668',
-      'mdi:tumble-dryer': 'openmoji:1f455',
-      'mdi:garage': 'openmoji:1f698',
-      'mdi:tree-outline': 'openmoji:1f333'
+      'mdi:solar-power': '☀️',
+      'mdi:solar-panel': '☀️',
+      'mdi:transmission-tower': '⚡',
+      'mdi:home-lightning-bolt': '🏠',
+      'mdi:current-ac': '🔌',
+      'mdi:battery': '🔋',
+      'mdi:battery-charging': '⚡',
+      'mdi:air-conditioner': '❄️',
+      'mdi:monitor': '🖥️',
+      'mdi:water-boiler': '♨️',
+      'mdi:tumble-dryer': '👕',
+      'mdi:garage': '🚗',
+      'mdi:tree-outline': '🌳'
     };
-    return iconMap[iconName] || 'mdi:help-circle';
+    return iconMap[iconName] || '⬤';
   }
 
   _drawFlowPaths(svg, ns) {
@@ -439,24 +417,24 @@ class CasaEnergyCard extends HTMLElement {
 
     // Inverter -> Batteries (charge paths)
     if (this._config.show_sonnenbatterie) {
-      paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 200, 220, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
+      paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 200, 190, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
     }
     if (this._config.show_b2500_baab) {
-      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 220, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1');
+      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 190, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 600, 220, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
+      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 600, 190, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
     }
 
     // Battery discharge -> Inverter
     if (this._config.show_sonnenbatterie) {
-      paths.batMainToInv = this._createFlowPath(svg, ns, 200, 220, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
+      paths.batMainToInv = this._createFlowPath(svg, ns, 200, 190, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
     }
     if (this._config.show_b2500_baab) {
-      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 220, 400, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
+      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 190, 400, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 220, 420, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
+      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 190, 420, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
     }
 
     this._flowPaths = paths;
@@ -508,13 +486,13 @@ class CasaEnergyCard extends HTMLElement {
     const e = this._entities;
     const batteries = [];
     if (this._config.show_sonnenbatterie) {
-      batteries.push({ x: 200, y: 220, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc });
+      batteries.push({ x: 200, y: 190, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc });
     }
     if (this._config.show_b2500_baab) {
-      batteries.push({ x: 400, y: 220, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc });
+      batteries.push({ x: 400, y: 190, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc });
     }
     if (this._config.show_b2500_b9f4) {
-      batteries.push({ x: 600, y: 220, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc });
+      batteries.push({ x: 600, y: 190, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc });
     }
 
     this._batteryElements = [];
