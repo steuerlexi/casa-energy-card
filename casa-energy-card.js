@@ -192,7 +192,7 @@ class CasaEnergyCard extends HTMLElement {
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', '0 0 800 540');
+    svg.setAttribute('viewBox', '0 0 800 420');
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svg.style.width = '100%';
     svg.style.height = 'auto';
@@ -281,11 +281,11 @@ class CasaEnergyCard extends HTMLElement {
     const e = this._entities;
 
     this._nodeGroups = {
-      pvMain: this._createNodeGroup(svg, ns, 80, 60, 'mdi:solar-power', 'PV Anlage', this._config.colors.solar, 'pv-main-value', 'pv-main-daily', e.pv_main),
-      pvBkw: this._createNodeGroup(svg, ns, 80, 180, 'mdi:solar-panel', 'BKW', this._config.colors.solar_bkw, 'pv-bkw-value', 'pv-bkw-daily', e.pv_bkw),
-      inverter: this._createInverterGroup(svg, ns, 400, 120),
-      grid: this._createNodeGroup(svg, ns, 720, 60, 'mdi:transmission-tower', 'Netz', this._config.colors.grid_export, 'grid-value', 'grid-daily', e.grid),
-      house: this._createNodeGroup(svg, ns, 720, 180, 'mdi:home-lightning-bolt', 'Haus', this._config.colors.consumption, 'house-value', 'house-daily', e.consumption),
+      pvMain: this._createNodeGroup(svg, ns, 120, 80, 'mdi:solar-power', 'PV Anlage', this._config.colors.solar, 'pv-main-value', 'pv-main-daily', e.pv_main),
+      inverter: this._createInverterGroup(svg, ns, 400, 80),
+      grid: this._createNodeGroup(svg, ns, 400, 20, 'mdi:transmission-tower', 'Netz', this._config.colors.grid_export, 'grid-value', 'grid-daily', e.grid),
+      house: this._createNodeGroup(svg, ns, 400, 200, 'mdi:home-lightning-bolt', 'Haus', this._config.colors.consumption, 'house-value', 'house-daily', e.consumption),
+      pvBkw: this._createNodeGroup(svg, ns, 680, 80, 'mdi:solar-panel', 'BKW', this._config.colors.solar_bkw, 'pv-bkw-value', 'pv-bkw-daily', e.pv_bkw),
     };
   }
 
@@ -415,30 +415,38 @@ class CasaEnergyCard extends HTMLElement {
   _drawFlowPaths(svg, ns) {
     const paths = {};
 
-    // PV Main -> Inverter
-    paths.pvMainToInv = this._createFlowPath(svg, ns, 108, 60, 360, 90, 'grad-solar', 'arrow-solar', 'flow-pv-main');
+    // PV Anlage -> Inverter (horizontal)
+    paths.pvMainToInv = this._createFlowPath(svg, ns, 152, 80, 360, 80, 'grad-solar', 'arrow-solar', 'flow-pv-main');
 
-    // PV BKW -> Inverter
-    paths.pvBkwToInv = this._createFlowPath(svg, ns, 108, 180, 360, 150, 'grad-solar-bkw', 'arrow-solar-bkw', 'flow-pv-bkw');
+    // BKW -> Inverter (horizontal)
+    paths.pvBkwToInv = this._createFlowPath(svg, ns, 648, 80, 440, 80, 'grad-solar-bkw', 'arrow-solar-bkw', 'flow-pv-bkw');
 
-    // Inverter -> Grid (export)
-    paths.invToGrid = this._createFlowPath(svg, ns, 440, 90, 692, 60, 'grad-grid-export', 'arrow-grid-export', 'flow-grid');
+    // Inverter -> Grid (export, up)
+    paths.invToGrid = this._createFlowPath(svg, ns, 400, 48, 400, 20, 'grad-grid-export', 'arrow-grid-export', 'flow-grid');
 
-    // Grid -> Inverter (import) - reverse direction, separate path
-    paths.gridToInv = this._createFlowPath(svg, ns, 692, 60, 440, 90, 'grad-grid-import', 'arrow-grid-import', 'flow-grid-import');
+    // Grid -> Inverter (import, down)
+    paths.gridToInv = this._createFlowPath(svg, ns, 400, 20, 400, 48, 'grad-grid-import', 'arrow-grid-import', 'flow-grid-import');
 
-    // Inverter -> House
-    paths.invToHouse = this._createFlowPath(svg, ns, 440, 150, 692, 180, 'grad-consumption', 'arrow-consumption', 'flow-house');
+    // Inverter -> Haus (down)
+    paths.invToHouse = this._createFlowPath(svg, ns, 400, 112, 400, 168, 'grad-consumption', 'arrow-consumption', 'flow-house');
 
-    // Inverter -> Batteries (charge paths)
-    paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 200, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-main');
-    paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-b2500-1');
-    paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 600, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-b2500-2');
+    // PV -> Sonnenbatterie (charge, down)
+    paths.pvToBatMain = this._createFlowPath(svg, ns, 120, 112, 120, 308, 'grad-battery-charge', 'arrow-battery-charge', 'flow-pv-to-bat-main');
 
-    // Battery discharge -> Inverter
-    paths.batMainToInv = this._createFlowPath(svg, ns, 200, 320, 380, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-main-out');
-    paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 320, 400, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-b2500-1-out');
-    paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 320, 420, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-b2500-2-out');
+    // Sonnenbatterie -> Inverter (discharge, up-right)
+    paths.batMainToInv = this._createFlowPath(svg, ns, 152, 340, 360, 100, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-main-out');
+
+    // BKW -> B2500 baab (charge, down-left)
+    paths.bkwToBatB2500_1 = this._createFlowPath(svg, ns, 680, 112, 620, 308, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bkw-to-bat-1');
+
+    // BKW -> B2500 b9f4 (charge, down-right)
+    paths.bkwToBatB2500_2 = this._createFlowPath(svg, ns, 680, 112, 740, 308, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bkw-to-bat-2');
+
+    // B2500 baab -> Haus (discharge, down-left)
+    paths.batB2500_1ToHouse = this._createFlowPath(svg, ns, 620, 372, 400, 232, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-1-to-house');
+
+    // B2500 b9f4 -> Haus (discharge, down-left)
+    paths.batB2500_2ToHouse = this._createFlowPath(svg, ns, 740, 372, 440, 232, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-2-to-house');
 
     this._flowPaths = paths;
   }
@@ -463,9 +471,9 @@ class CasaEnergyCard extends HTMLElement {
   _drawBatteryBoxes(svg, ns) {
     const e = this._entities;
     const batteries = [
-      { x: 200, y: 360, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc },
-      { x: 400, y: 360, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc },
-      { x: 600, y: 360, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc },
+      { x: 120, y: 340, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc },
+      { x: 620, y: 340, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc },
+      { x: 740, y: 340, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc },
     ];
 
     this._batteryElements = [];
@@ -654,6 +662,7 @@ class CasaEnergyCard extends HTMLElement {
   _updateFlows() {
     if (!this._flowPaths || !this._hass) return;
     const e = this._entities;
+    const MIN_FLOW_WATTS = 10;
 
     const pvMain = this._getState(e.pv_main);
     const pvBkw = this._getState(e.pv_bkw);
@@ -663,46 +672,78 @@ class CasaEnergyCard extends HTMLElement {
     const batB2500_1 = this._getState(e.battery_b2500_1_power);
     const batB2500_2 = this._getState(e.battery_b2500_2_power);
 
-    // PV Main -> Inverter
-    this._setFlowVisibility('flow-pv-main', pvMain > 0);
-    this._setFlowWidth('flow-pv-main', pvMain);
+    // Flow speeds: stored per path for proportional animation
+    if (!this._flowSpeeds) this._flowSpeeds = {};
 
-    // PV BKW -> Inverter
-    this._setFlowVisibility('flow-pv-bkw', pvBkw > 0);
+    // PV Anlage -> Inverter
+    this._setFlowVisibility('flow-pv-main', pvMain > MIN_FLOW_WATTS);
+    this._setFlowWidth('flow-pv-main', pvMain);
+    this._flowSpeeds['flow-pv-main'] = this._calcFlowSpeed(pvMain);
+
+    // BKW -> Inverter
+    this._setFlowVisibility('flow-pv-bkw', pvBkw > MIN_FLOW_WATTS);
     this._setFlowWidth('flow-pv-bkw', pvBkw);
+    this._flowSpeeds['flow-pv-bkw'] = this._calcFlowSpeed(pvBkw);
 
     // Grid flows
-    const isExport = grid > 0;
-    const isImport = grid < 0;
+    const isExport = grid > MIN_FLOW_WATTS;
+    const isImport = grid < -MIN_FLOW_WATTS;
     this._setFlowVisibility('flow-grid', isExport);
     this._setFlowVisibility('flow-grid-import', isImport);
     this._setFlowWidth('flow-grid', Math.abs(grid));
     this._setFlowWidth('flow-grid-import', Math.abs(grid));
+    this._flowSpeeds['flow-grid'] = this._calcFlowSpeed(Math.abs(grid));
+    this._flowSpeeds['flow-grid-import'] = this._calcFlowSpeed(Math.abs(grid));
 
-    // Inverter -> House
-    this._setFlowVisibility('flow-house', consumption > 0);
+    // Inverter -> Haus
+    this._setFlowVisibility('flow-house', consumption > MIN_FLOW_WATTS);
     this._setFlowWidth('flow-house', consumption);
+    this._flowSpeeds['flow-house'] = this._calcFlowSpeed(consumption);
 
-    // Battery Main
-    const batMainCharging = batMain < 0;
-    this._setFlowVisibility('flow-bat-main', batMainCharging);
-    this._setFlowVisibility('flow-bat-main-out', !batMainCharging && batMain !== 0);
-    this._setFlowWidth('flow-bat-main', Math.abs(batMain));
+    // PV -> Sonnenbatterie (charge)
+    const batMainCharging = batMain < -MIN_FLOW_WATTS;
+    this._setFlowVisibility('flow-pv-to-bat-main', batMainCharging);
+    this._setFlowWidth('flow-pv-to-bat-main', Math.abs(batMain));
+    this._flowSpeeds['flow-pv-to-bat-main'] = this._calcFlowSpeed(Math.abs(batMain));
+
+    // Sonnenbatterie -> Inverter (discharge)
+    const batMainDischarging = batMain > MIN_FLOW_WATTS;
+    this._setFlowVisibility('flow-bat-main-out', batMainDischarging);
     this._setFlowWidth('flow-bat-main-out', Math.abs(batMain));
+    this._flowSpeeds['flow-bat-main-out'] = this._calcFlowSpeed(Math.abs(batMain));
 
-    // Battery B2500-1
-    const batB2500_1Charging = batB2500_1 < 0;
-    this._setFlowVisibility('flow-bat-b2500-1', batB2500_1Charging);
-    this._setFlowVisibility('flow-bat-b2500-1-out', !batB2500_1Charging && batB2500_1 !== 0);
-    this._setFlowWidth('flow-bat-b2500-1', Math.abs(batB2500_1));
-    this._setFlowWidth('flow-bat-b2500-1-out', Math.abs(batB2500_1));
+    // BKW -> B2500 baab (charge)
+    const bat1Charging = batB2500_1 < -MIN_FLOW_WATTS;
+    this._setFlowVisibility('flow-bkw-to-bat-1', bat1Charging);
+    this._setFlowWidth('flow-bkw-to-bat-1', Math.abs(batB2500_1));
+    this._flowSpeeds['flow-bkw-to-bat-1'] = this._calcFlowSpeed(Math.abs(batB2500_1));
 
-    // Battery B2500-2
-    const batB2500_2Charging = batB2500_2 < 0;
-    this._setFlowVisibility('flow-bat-b2500-2', batB2500_2Charging);
-    this._setFlowVisibility('flow-bat-b2500-2-out', !batB2500_2Charging && batB2500_2 !== 0);
-    this._setFlowWidth('flow-bat-b2500-2', Math.abs(batB2500_2));
-    this._setFlowWidth('flow-bat-b2500-2-out', Math.abs(batB2500_2));
+    // BKW -> B2500 b9f4 (charge)
+    const bat2Charging = batB2500_2 < -MIN_FLOW_WATTS;
+    this._setFlowVisibility('flow-bkw-to-bat-2', bat2Charging);
+    this._setFlowWidth('flow-bkw-to-bat-2', Math.abs(batB2500_2));
+    this._flowSpeeds['flow-bkw-to-bat-2'] = this._calcFlowSpeed(Math.abs(batB2500_2));
+
+    // B2500 baab -> Haus (discharge)
+    const bat1Discharging = batB2500_1 > MIN_FLOW_WATTS;
+    this._setFlowVisibility('flow-bat-1-to-house', bat1Discharging);
+    this._setFlowWidth('flow-bat-1-to-house', Math.abs(batB2500_1));
+    this._flowSpeeds['flow-bat-1-to-house'] = this._calcFlowSpeed(Math.abs(batB2500_1));
+
+    // B2500 b9f4 -> Haus (discharge)
+    const bat2Discharging = batB2500_2 > MIN_FLOW_WATTS;
+    this._setFlowVisibility('flow-bat-2-to-house', bat2Discharging);
+    this._setFlowWidth('flow-bat-2-to-house', Math.abs(batB2500_2));
+    this._flowSpeeds['flow-bat-2-to-house'] = this._calcFlowSpeed(Math.abs(batB2500_2));
+  }
+
+  _calcFlowSpeed(powerWatts) {
+    // Logarithmic speed scaling: low power = slow, high power = fast
+    // 10W -> 0.3x, 100W -> 0.6x, 500W -> 1.0x, 2000W -> 1.5x, 5000W+ -> 2.0x
+    const baseSpeed = this._config.animation_speed || 1;
+    if (powerWatts <= 10) return 0.2 * baseSpeed;
+    const logSpeed = 0.3 + 0.4 * Math.log10(powerWatts / 10);
+    return Math.min(2.0, logSpeed) * baseSpeed;
   }
 
   _setFlowVisibility(id, visible) {
@@ -742,6 +783,7 @@ class CasaEnergyCard extends HTMLElement {
     if (!this._flowPaths) return;
     const now = Date.now();
     const paths = this._flowPaths;
+    const speeds = this._flowSpeeds || {};
 
     for (const key in paths) {
       const path = paths[key];
@@ -750,8 +792,8 @@ class CasaEnergyCard extends HTMLElement {
       if (style.opacity === '0') continue;
 
       const length = path.getTotalLength ? path.getTotalLength() : 200;
-      const speed = this._config.animation_speed;
-      const offset = -((now / (10 / speed)) % length);
+      const pathSpeed = speeds[key] || 0.5;
+      const offset = -((now / (15 / pathSpeed)) % length);
       path.style.strokeDasharray = '10, 15';
       path.style.strokeDashoffset = offset;
     }
