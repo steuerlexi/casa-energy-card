@@ -44,6 +44,8 @@ class CasaEnergyCard extends HTMLElement {
         inverter_freq: 'sensor.sonnenbatterie_81923_state_netfrequency',
         daily_solar: 'sensor.sonnenbatterie_81923_pv_tagesertrag',
         daily_export: 'sensor.sonnenbatterie_81923_einspeisung_tagesertrag',
+        daily_b2500_in: 'sensor.b2500_total_daily_energy_in',
+        daily_b2500_out: 'sensor.b2500_total_daily_energy_out',
         load_klima: 'sensor.shelly_klimaanlage_switch_0_power',
         load_server: 'sensor.plug_proxmoxserver_power',
         load_warmwasser: 'sensor.plug_warmwasserspeicher_power',
@@ -123,6 +125,31 @@ class CasaEnergyCard extends HTMLElement {
     return Math.round(val) + ' ' + unit;
   }
 
+  _fireMoreInfo(entityId) {
+    if (!entityId) return;
+    const event = new Event('hass-more-info', {
+      bubbles: true,
+      composed: true,
+    });
+    event.detail = { entityId: entityId };
+    this.dispatchEvent(event);
+  }
+
+  _attachClickHandler(element, entityId) {
+    if (!entityId) return;
+    element.style.cursor = 'pointer';
+    element.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._fireMoreInfo(entityId);
+    });
+    element.addEventListener('mouseenter', () => {
+      element.style.opacity = '0.85';
+    });
+    element.addEventListener('mouseleave', () => {
+      element.style.opacity = '1';
+    });
+  }
+
   _render() {
     if (!this._config) return;
     const now = Date.now();
@@ -150,74 +177,74 @@ class CasaEnergyCard extends HTMLElement {
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', '0 0 800 520');
+    svg.setAttribute('viewBox', '0 0 800 540');
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svg.style.width = '100%';
     svg.style.height = 'auto';
-    svg.style.maxHeight = '520px';
+    svg.style.maxHeight = '540px';
     svg.style.display = 'block';
 
     const defs = document.createElementNS(svgNS, 'defs');
     defs.innerHTML = `
-      <marker id="arrow-solar" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-        <polygon points="0,0 6,3 0,6" fill="${this._config.colors.solar}"/>
+      <marker id="arrow-solar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.solar}"/>
       </marker>
-      <marker id="arrow-solar-bkw" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-        <polygon points="0,0 6,3 0,6" fill="${this._config.colors.solar_bkw}"/>
+      <marker id="arrow-solar-bkw" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.solar_bkw}"/>
       </marker>
-      <marker id="arrow-grid-export" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-        <polygon points="0,0 6,3 0,6" fill="${this._config.colors.grid_export}"/>
+      <marker id="arrow-grid-export" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.grid_export}"/>
       </marker>
-      <marker id="arrow-grid-import" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-        <polygon points="0,0 6,3 0,6" fill="${this._config.colors.grid_import}"/>
+      <marker id="arrow-grid-import" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.grid_import}"/>
       </marker>
-      <marker id="arrow-battery-charge" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-        <polygon points="0,0 6,3 0,6" fill="${this._config.colors.battery_charge}"/>
+      <marker id="arrow-battery-charge" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+        <polygon points="8,0 0,4 8,8" fill="${this._config.colors.battery_charge}"/>
       </marker>
-      <marker id="arrow-battery-discharge" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-        <polygon points="0,0 6,3 0,6" fill="${this._config.colors.battery_discharge}"/>
+      <marker id="arrow-battery-discharge" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.battery_discharge}"/>
       </marker>
-      <marker id="arrow-consumption" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-        <polygon points="0,0 6,3 0,6" fill="${this._config.colors.consumption}"/>
+      <marker id="arrow-consumption" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.consumption}"/>
       </marker>
       <filter id="glow">
         <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
         <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
       <linearGradient id="grad-solar" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="${this._config.colors.solar}" stop-opacity="0.3"/>
-        <stop offset="50%" stop-color="${this._config.colors.solar}" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="${this._config.colors.solar}" stop-opacity="0.3"/>
+        <stop offset="0%" stop-color="${this._config.colors.solar}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.solar}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.solar}" stop-opacity="0.2"/>
       </linearGradient>
       <linearGradient id="grad-solar-bkw" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="${this._config.colors.solar_bkw}" stop-opacity="0.3"/>
-        <stop offset="50%" stop-color="${this._config.colors.solar_bkw}" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="${this._config.colors.solar_bkw}" stop-opacity="0.3"/>
+        <stop offset="0%" stop-color="${this._config.colors.solar_bkw}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.solar_bkw}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.solar_bkw}" stop-opacity="0.2"/>
       </linearGradient>
       <linearGradient id="grad-grid-export" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="${this._config.colors.grid_export}" stop-opacity="0.3"/>
-        <stop offset="50%" stop-color="${this._config.colors.grid_export}" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="${this._config.colors.grid_export}" stop-opacity="0.3"/>
+        <stop offset="0%" stop-color="${this._config.colors.grid_export}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.grid_export}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.grid_export}" stop-opacity="0.2"/>
       </linearGradient>
       <linearGradient id="grad-grid-import" x1="100%" y1="0%" x2="0%" y2="0%">
-        <stop offset="0%" stop-color="${this._config.colors.grid_import}" stop-opacity="0.3"/>
-        <stop offset="50%" stop-color="${this._config.colors.grid_import}" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="${this._config.colors.grid_import}" stop-opacity="0.3"/>
+        <stop offset="0%" stop-color="${this._config.colors.grid_import}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.grid_import}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.grid_import}" stop-opacity="0.2"/>
       </linearGradient>
       <linearGradient id="grad-battery-charge" x1="0%" y1="100%" x2="0%" y2="0%">
-        <stop offset="0%" stop-color="${this._config.colors.battery_charge}" stop-opacity="0.3"/>
-        <stop offset="50%" stop-color="${this._config.colors.battery_charge}" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="${this._config.colors.battery_charge}" stop-opacity="0.3"/>
+        <stop offset="0%" stop-color="${this._config.colors.battery_charge}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.battery_charge}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.battery_charge}" stop-opacity="0.2"/>
       </linearGradient>
       <linearGradient id="grad-battery-discharge" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="${this._config.colors.battery_discharge}" stop-opacity="0.3"/>
-        <stop offset="50%" stop-color="${this._config.colors.battery_discharge}" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="${this._config.colors.battery_discharge}" stop-opacity="0.3"/>
+        <stop offset="0%" stop-color="${this._config.colors.battery_discharge}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.battery_discharge}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.battery_discharge}" stop-opacity="0.2"/>
       </linearGradient>
       <linearGradient id="grad-consumption" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="${this._config.colors.consumption}" stop-opacity="0.3"/>
-        <stop offset="50%" stop-color="${this._config.colors.consumption}" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="${this._config.colors.consumption}" stop-opacity="0.3"/>
+        <stop offset="0%" stop-color="${this._config.colors.consumption}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.consumption}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.consumption}" stop-opacity="0.2"/>
       </linearGradient>
     `;
     svg.appendChild(defs);
@@ -237,19 +264,27 @@ class CasaEnergyCard extends HTMLElement {
   }
 
   _drawStaticElements(svg, ns) {
-    const groups = {
-      pvMain: this._createNodeGroup(svg, ns, 80, 60, 'mdi:solar-power', 'PV Anlage', this._config.colors.solar, 'pv-main-value', 'pv-main-daily'),
-      pvBkw: this._createNodeGroup(svg, ns, 80, 180, 'mdi:solar-panel', 'BKW', this._config.colors.solar_bkw, 'pv-bkw-value'),
+    const e = this._entities;
+
+    this._nodeGroups = {
+      pvMain: this._createNodeGroup(svg, ns, 80, 60, 'mdi:solar-power', 'PV Anlage', this._config.colors.solar, 'pv-main-value', 'pv-main-daily', e.pv_main),
+      pvBkw: this._createNodeGroup(svg, ns, 80, 180, 'mdi:solar-panel', 'BKW', this._config.colors.solar_bkw, 'pv-bkw-value', 'pv-bkw-daily', e.pv_bkw),
       inverter: this._createInverterGroup(svg, ns, 400, 120),
-      grid: this._createNodeGroup(svg, ns, 720, 60, 'mdi:transmission-tower', 'Netz', this._config.colors.grid_export, 'grid-value', 'grid-daily'),
-      house: this._createNodeGroup(svg, ns, 720, 180, 'mdi:home-lightning-bolt', 'Haus', this._config.colors.consumption, 'house-value', 'house-daily'),
+      grid: this._createNodeGroup(svg, ns, 720, 60, 'mdi:transmission-tower', 'Netz', this._config.colors.grid_export, 'grid-value', 'grid-daily', e.grid),
+      house: this._createNodeGroup(svg, ns, 720, 180, 'mdi:home-lightning-bolt', 'Haus', this._config.colors.consumption, 'house-value', 'house-daily', e.consumption),
     };
-    this._nodeGroups = groups;
   }
 
-  _createNodeGroup(svg, ns, x, y, icon, label, color, valueId, dailyId = null) {
+  _createNodeGroup(svg, ns, x, y, icon, label, color, valueId, dailyId = null, entityId = null) {
     const g = document.createElementNS(ns, 'g');
     g.setAttribute('transform', `translate(${x}, ${y})`);
+
+    // Clickable background circle (invisible but captures clicks)
+    const hitArea = document.createElementNS(ns, 'circle');
+    hitArea.setAttribute('r', '44');
+    hitArea.setAttribute('fill', 'transparent');
+    this._attachClickHandler(hitArea, entityId);
+    g.appendChild(hitArea);
 
     const circle = document.createElementNS(ns, 'circle');
     circle.setAttribute('r', '28');
@@ -264,6 +299,7 @@ class CasaEnergyCard extends HTMLElement {
     iconText.setAttribute('font-size', '20');
     iconText.textContent = this._getIconChar(icon);
     iconText.setAttribute('fill', color);
+    iconText.style.pointerEvents = 'none';
     g.appendChild(iconText);
 
     const labelText = document.createElementNS(ns, 'text');
@@ -273,6 +309,7 @@ class CasaEnergyCard extends HTMLElement {
     labelText.setAttribute('font-weight', '500');
     labelText.setAttribute('fill', this._config.colors.text);
     labelText.textContent = label;
+    labelText.style.pointerEvents = 'none';
     g.appendChild(labelText);
 
     const valueText = document.createElementNS(ns, 'text');
@@ -283,6 +320,9 @@ class CasaEnergyCard extends HTMLElement {
     valueText.setAttribute('fill', color);
     valueText.setAttribute('id', valueId);
     valueText.textContent = '0 W';
+    valueText.style.cursor = entityId ? 'pointer' : 'default';
+    valueText.style.pointerEvents = 'auto';
+    this._attachClickHandler(valueText, entityId);
     g.appendChild(valueText);
 
     if (dailyId) {
@@ -293,6 +333,7 @@ class CasaEnergyCard extends HTMLElement {
       dailyText.setAttribute('fill', this._config.colors.text_secondary);
       dailyText.setAttribute('id', dailyId);
       dailyText.textContent = '';
+      dailyText.style.pointerEvents = 'none';
       g.appendChild(dailyText);
     }
 
@@ -321,6 +362,7 @@ class CasaEnergyCard extends HTMLElement {
     iconText.setAttribute('font-size', '20');
     iconText.textContent = this._getIconChar('mdi:current-ac');
     iconText.setAttribute('fill', this._config.colors.inverter);
+    iconText.style.pointerEvents = 'none';
     g.appendChild(iconText);
 
     const statusText = document.createElementNS(ns, 'text');
@@ -330,6 +372,7 @@ class CasaEnergyCard extends HTMLElement {
     statusText.setAttribute('fill', this._config.colors.text_secondary);
     statusText.setAttribute('id', 'inverter-status');
     statusText.textContent = 'Standby';
+    statusText.style.pointerEvents = 'none';
     g.appendChild(statusText);
 
     svg.appendChild(g);
@@ -346,7 +389,7 @@ class CasaEnergyCard extends HTMLElement {
       'mdi:battery': 'ὐB',
       'mdi:battery-charging': '⚡',
       'mdi:air-conditioner': '❄',
-      'mdi:monitor': '὚5',
+      'mdi:monitor': 'Ὓ5',
       'mdi:water-boiler': '♨',
       'mdi:tumble-dryer': 'ᾟA',
       'mdi:garage': 'Ἶ0',
@@ -358,27 +401,30 @@ class CasaEnergyCard extends HTMLElement {
   _drawFlowPaths(svg, ns) {
     const paths = {};
 
-    // PV Main -> Inverter (top-left to center-left)
+    // PV Main -> Inverter
     paths.pvMainToInv = this._createFlowPath(svg, ns, 108, 60, 360, 90, 'grad-solar', 'arrow-solar', 'flow-pv-main');
 
-    // PV BKW -> Inverter (mid-left to center-left-bottom)
+    // PV BKW -> Inverter
     paths.pvBkwToInv = this._createFlowPath(svg, ns, 108, 180, 360, 150, 'grad-solar-bkw', 'arrow-solar-bkw', 'flow-pv-bkw');
 
-    // Inverter -> Grid (center-right to top-right)
+    // Inverter -> Grid (export)
     paths.invToGrid = this._createFlowPath(svg, ns, 440, 90, 692, 60, 'grad-grid-export', 'arrow-grid-export', 'flow-grid');
 
-    // Inverter -> House (center-right to mid-right)
+    // Grid -> Inverter (import) - reverse direction, separate path
+    paths.gridToInv = this._createFlowPath(svg, ns, 692, 60, 440, 90, 'grad-grid-import', 'arrow-grid-import', 'flow-grid-import');
+
+    // Inverter -> House
     paths.invToHouse = this._createFlowPath(svg, ns, 440, 150, 692, 180, 'grad-consumption', 'arrow-consumption', 'flow-house');
 
-    // Inverter -> Batteries (center-bottom to each battery)
+    // Inverter -> Batteries (charge paths)
     paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 200, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-main');
     paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-b2500-1');
     paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 600, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-b2500-2');
 
-    // Battery discharge -> Inverter (reverse paths)
-    paths.batMainToInv = this._createFlowPath(svg, ns, 200, 300, 380, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-main-out');
-    paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 300, 400, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-b2500-1-out');
-    paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 300, 420, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-b2500-2-out');
+    // Battery discharge -> Inverter
+    paths.batMainToInv = this._createFlowPath(svg, ns, 200, 320, 380, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-main-out');
+    paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 320, 400, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-b2500-1-out');
+    paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 320, 420, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-b2500-2-out');
 
     this._flowPaths = paths;
   }
@@ -392,17 +438,20 @@ class CasaEnergyCard extends HTMLElement {
     path.setAttribute('stroke', `url(#${gradientId})`);
     path.setAttribute('stroke-width', '3');
     path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('marker-end', `url(#${markerId})`);
     path.setAttribute('id', id);
     path.style.opacity = '0.6';
+    path.style.pointerEvents = 'none';
     svg.insertBefore(path, svg.firstChild.nextSibling);
     return path;
   }
 
   _drawBatteryBoxes(svg, ns) {
+    const e = this._entities;
     const batteries = [
-      { x: 200, y: 350, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar' },
-      { x: 400, y: 350, label: 'B2500-1', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar' },
-      { x: 600, y: 350, label: 'B2500-2', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar' },
+      { x: 200, y: 360, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc },
+      { x: 400, y: 360, label: 'B2500-1', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc },
+      { x: 600, y: 360, label: 'B2500-2', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc },
     ];
 
     this._batteryElements = [];
@@ -410,6 +459,17 @@ class CasaEnergyCard extends HTMLElement {
     for (const bat of batteries) {
       const g = document.createElementNS(ns, 'g');
       g.setAttribute('transform', `translate(${bat.x}, ${bat.y})`);
+
+      // Hit area for clicking
+      const hitArea = document.createElementNS(ns, 'rect');
+      hitArea.setAttribute('x', '-50');
+      hitArea.setAttribute('y', '-35');
+      hitArea.setAttribute('width', '100');
+      hitArea.setAttribute('height', '70');
+      hitArea.setAttribute('fill', 'transparent');
+      hitArea.setAttribute('cursor', 'pointer');
+      this._attachClickHandler(hitArea, bat.entityPower || bat.entitySoc);
+      g.appendChild(hitArea);
 
       // Battery outline
       const rect = document.createElementNS(ns, 'rect');
@@ -452,9 +512,10 @@ class CasaEnergyCard extends HTMLElement {
       label.setAttribute('font-weight', '500');
       label.setAttribute('fill', this._config.colors.text);
       label.textContent = bat.label;
+      label.style.pointerEvents = 'none';
       g.appendChild(label);
 
-      // Power value
+      // Power value (clickable)
       const power = document.createElementNS(ns, 'text');
       power.setAttribute('text-anchor', 'middle');
       power.setAttribute('y', '5');
@@ -463,9 +524,12 @@ class CasaEnergyCard extends HTMLElement {
       power.setAttribute('fill', bat.color);
       power.setAttribute('id', bat.powerId);
       power.textContent = '0 W';
+      power.style.cursor = bat.entityPower ? 'pointer' : 'default';
+      power.style.pointerEvents = 'auto';
+      this._attachClickHandler(power, bat.entityPower);
       g.appendChild(power);
 
-      // SoC value
+      // SoC value (clickable)
       const soc = document.createElementNS(ns, 'text');
       soc.setAttribute('text-anchor', 'middle');
       soc.setAttribute('y', '20');
@@ -473,6 +537,9 @@ class CasaEnergyCard extends HTMLElement {
       soc.setAttribute('fill', this._config.colors.text_secondary);
       soc.setAttribute('id', bat.socId);
       soc.textContent = '0%';
+      soc.style.cursor = bat.entitySoc ? 'pointer' : 'default';
+      soc.style.pointerEvents = 'auto';
+      this._attachClickHandler(soc, bat.entitySoc);
       g.appendChild(soc);
 
       svg.appendChild(g);
@@ -481,13 +548,14 @@ class CasaEnergyCard extends HTMLElement {
   }
 
   _drawSubLoads(svg, ns) {
+    const e = this._entities;
     const loads = [
-      { x: 720, y: 260, icon: 'mdi:air-conditioner', label: 'Klima', entity: this._entities.load_klima, valueId: 'load-klima' },
-      { x: 720, y: 310, icon: 'mdi:monitor', label: 'Server', entity: this._entities.load_server, valueId: 'load-server' },
-      { x: 720, y: 360, icon: 'mdi:water-boiler', label: 'Warmw.', entity: this._entities.load_warmwasser, valueId: 'load-warmwasser' },
-      { x: 720, y: 410, icon: 'mdi:tumble-dryer', label: 'Trockner', entity: this._entities.load_trockner, valueId: 'load-trockner' },
-      { x: 720, y: 460, icon: 'mdi:garage', label: 'Garage', entity: this._entities.load_garage, valueId: 'load-garage' },
-      { x: 720, y: 510, icon: 'mdi:tree-outline', label: 'Garten', entity: this._entities.load_garten, valueId: 'load-garten' },
+      { x: 720, y: 260, icon: 'mdi:air-conditioner', label: 'Klima', entity: e.load_klima, valueId: 'load-klima' },
+      { x: 720, y: 310, icon: 'mdi:monitor', label: 'Server', entity: e.load_server, valueId: 'load-server' },
+      { x: 720, y: 360, icon: 'mdi:water-boiler', label: 'Warmw.', entity: e.load_warmwasser, valueId: 'load-warmwasser' },
+      { x: 720, y: 410, icon: 'mdi:tumble-dryer', label: 'Trockner', entity: e.load_trockner, valueId: 'load-trockner' },
+      { x: 720, y: 460, icon: 'mdi:garage', label: 'Garage', entity: e.load_garage, valueId: 'load-garage' },
+      { x: 720, y: 510, icon: 'mdi:tree-outline', label: 'Garten', entity: e.load_garten, valueId: 'load-garten' },
     ];
 
     this._subLoadElements = [];
@@ -497,6 +565,18 @@ class CasaEnergyCard extends HTMLElement {
 
       const g = document.createElementNS(ns, 'g');
       g.setAttribute('transform', `translate(${load.x}, ${load.y})`);
+
+      // Hit area
+      const hitArea = document.createElementNS(ns, 'rect');
+      hitArea.setAttribute('x', '-72');
+      hitArea.setAttribute('y', '-16');
+      hitArea.setAttribute('width', '144');
+      hitArea.setAttribute('height', '32');
+      hitArea.setAttribute('fill', 'transparent');
+      hitArea.setAttribute('cursor', 'pointer');
+      hitArea.setAttribute('rx', '4');
+      this._attachClickHandler(hitArea, load.entity);
+      g.appendChild(hitArea);
 
       const rect = document.createElementNS(ns, 'rect');
       rect.setAttribute('x', '-70');
@@ -517,6 +597,7 @@ class CasaEnergyCard extends HTMLElement {
       labelText.setAttribute('font-size', '10');
       labelText.setAttribute('fill', this._config.colors.text);
       labelText.textContent = load.label;
+      labelText.style.pointerEvents = 'none';
       g.appendChild(labelText);
 
       const valueText = document.createElementNS(ns, 'text');
@@ -528,6 +609,9 @@ class CasaEnergyCard extends HTMLElement {
       valueText.setAttribute('fill', this._config.colors.consumption);
       valueText.setAttribute('id', load.valueId);
       valueText.textContent = '0 W';
+      valueText.style.cursor = 'pointer';
+      valueText.style.pointerEvents = 'auto';
+      this._attachClickHandler(valueText, load.entity);
       g.appendChild(valueText);
 
       svg.appendChild(g);
@@ -550,6 +634,17 @@ class CasaEnergyCard extends HTMLElement {
     this._setText('pv-main-daily', dailySolar > 0 ? `${dailySolar.toFixed(1)} kWh` : '');
     this._setText('pv-bkw-value', this._formatValue(pvBkw));
 
+    // B2500 daily energy
+    const dailyB2500In = this._getState(e.daily_b2500_in);
+    const dailyB2500Out = this._getState(e.daily_b2500_out);
+    let bkwDailyText = '';
+    if (dailyB2500In > 0 || dailyB2500Out > 0) {
+      bkwDailyText = `${dailyB2500In.toFixed(1)} in / ${dailyB2500Out.toFixed(1)} out kWh`;
+    } else if (dailyB2500In > 0) {
+      bkwDailyText = `${dailyB2500In.toFixed(1)} kWh`;
+    }
+    this._setText('pv-bkw-daily', bkwDailyText);
+
     // Grid
     const grid = this._getState(e.grid);
     const isExport = grid > 0;
@@ -562,6 +657,8 @@ class CasaEnergyCard extends HTMLElement {
     // House
     const consumption = this._getState(e.consumption);
     this._setText('house-value', this._formatValue(consumption));
+    const dailyLoad = this._getState(e.daily_load);
+    this._setText('house-daily', dailyLoad > 0 ? `${dailyLoad.toFixed(1)} kWh` : '');
 
     // Inverter status
     const status = this._getTextState(e.inverter_status, 'Standby');
@@ -572,19 +669,19 @@ class CasaEnergyCard extends HTMLElement {
     const batMainSoc = this._getState(e.battery_main_soc);
     this._setText('bat-main-power', this._formatValue(Math.abs(batMainPower)));
     this._setText('bat-main-soc', `${Math.round(batMainSoc)}%`);
-    this._setBatteryBar('bat-main-bar', batMainSoc, batMainPower > 0);
+    this._setBatteryBar('bat-main-bar', batMainSoc, batMainPower < 0);
 
     const batB2500_1Power = this._getState(e.battery_b2500_1_power);
     const batB2500_1Soc = this._getState(e.battery_b2500_1_soc);
     this._setText('bat-b2500-1-power', this._formatValue(Math.abs(batB2500_1Power)));
     this._setText('bat-b2500-1-soc', `${Math.round(batB2500_1Soc)}%`);
-    this._setBatteryBar('bat-b2500-1-bar', batB2500_1Soc, batB2500_1Power > 0);
+    this._setBatteryBar('bat-b2500-1-bar', batB2500_1Soc, batB2500_1Power < 0);
 
     const batB2500_2Power = this._getState(e.battery_b2500_2_power);
     const batB2500_2Soc = this._getState(e.battery_b2500_2_soc);
     this._setText('bat-b2500-2-power', this._formatValue(Math.abs(batB2500_2Power)));
     this._setText('bat-b2500-2-soc', `${Math.round(batB2500_2Soc)}%`);
-    this._setBatteryBar('bat-b2500-2-bar', batB2500_2Soc, batB2500_2Power > 0);
+    this._setBatteryBar('bat-b2500-2-bar', batB2500_2Soc, batB2500_2Power < 0);
 
     // Sub-loads
     const loads = [
@@ -636,7 +733,7 @@ class CasaEnergyCard extends HTMLElement {
     const batB2500_1 = this._getState(e.battery_b2500_1_power);
     const batB2500_2 = this._getState(e.battery_b2500_2_power);
 
-    // PV Main -> Inverter (always flows when producing)
+    // PV Main -> Inverter
     this._setFlowVisibility('flow-pv-main', pvMain > 0);
     this._setFlowWidth('flow-pv-main', pvMain);
 
@@ -644,16 +741,13 @@ class CasaEnergyCard extends HTMLElement {
     this._setFlowVisibility('flow-pv-bkw', pvBkw > 0);
     this._setFlowWidth('flow-pv-bkw', pvBkw);
 
-    // Inverter -> Grid (when exporting)
+    // Grid flows
     const isExport = grid > 0;
+    const isImport = grid < 0;
     this._setFlowVisibility('flow-grid', isExport);
+    this._setFlowVisibility('flow-grid-import', isImport);
     this._setFlowWidth('flow-grid', Math.abs(grid));
-    if (isExport) {
-      this._setFlowColor('flow-grid', `url(#grad-grid-export)`);
-    }
-
-    // Grid -> Inverter (when importing) - reverse direction
-    // Note: For import we would need a separate path, for now we just hide export path
+    this._setFlowWidth('flow-grid-import', Math.abs(grid));
 
     // Inverter -> House
     this._setFlowVisibility('flow-house', consumption > 0);
@@ -721,7 +815,8 @@ class CasaEnergyCard extends HTMLElement {
       if (style.opacity === '0') continue;
 
       const length = path.getTotalLength ? path.getTotalLength() : 200;
-      const offset = -((now / (10 / this._config.animation_speed)) % length);
+      const speed = this._config.animation_speed;
+      const offset = -((now / (10 / speed)) % length);
       path.style.strokeDasharray = '10, 15';
       path.style.strokeDashoffset = offset;
     }
@@ -746,6 +841,83 @@ class CasaEnergyCard extends HTMLElement {
         { name: 'decimal_places', selector: { number: { min: 0, max: 3, step: 1 } } },
         { name: 'auto_scale', selector: { boolean: {} } },
         { name: 'animation_speed', selector: { number: { min: 0.1, max: 5, step: 0.1 } } },
+        {
+          type: 'section',
+          label: 'Solar Entities'
+        },
+        {
+          type: 'grid',
+          schema: [
+            { name: 'entities.pv_main', selector: { entity: { domain: ['sensor'] } }, label: 'PV Main Power' },
+            { name: 'entities.pv_bkw', selector: { entity: { domain: ['sensor'] } }, label: 'BKW Power' },
+            { name: 'entities.daily_solar', selector: { entity: { domain: ['sensor'] } }, label: 'Daily Solar (kWh)' },
+          ]
+        },
+        {
+          type: 'section',
+          label: 'Grid & House'
+        },
+        {
+          type: 'grid',
+          schema: [
+            { name: 'entities.grid', selector: { entity: { domain: ['sensor'] } }, label: 'Grid In/Out' },
+            { name: 'entities.daily_export', selector: { entity: { domain: ['sensor'] } }, label: 'Daily Export (kWh)' },
+            { name: 'entities.consumption', selector: { entity: { domain: ['sensor'] } }, label: 'House Consumption' },
+            { name: 'entities.daily_load', selector: { entity: { domain: ['sensor'] } }, label: 'Daily Load (kWh)' },
+          ]
+        },
+        {
+          type: 'section',
+          label: 'Batteries'
+        },
+        {
+          type: 'grid',
+          schema: [
+            { name: 'entities.battery_main_power', selector: { entity: { domain: ['sensor'] } }, label: 'Main Battery Power' },
+            { name: 'entities.battery_main_soc', selector: { entity: { domain: ['sensor'] } }, label: 'Main Battery SoC' },
+            { name: 'entities.battery_b2500_1_power', selector: { entity: { domain: ['sensor'] } }, label: 'B2500-1 Power' },
+            { name: 'entities.battery_b2500_1_soc', selector: { entity: { domain: ['sensor'] } }, label: 'B2500-1 SoC' },
+            { name: 'entities.battery_b2500_2_power', selector: { entity: { domain: ['sensor'] } }, label: 'B2500-2 Power' },
+            { name: 'entities.battery_b2500_2_soc', selector: { entity: { domain: ['sensor'] } }, label: 'B2500-2 SoC' },
+          ]
+        },
+        {
+          type: 'section',
+          label: 'B2500 Daily Energy'
+        },
+        {
+          type: 'grid',
+          schema: [
+            { name: 'entities.daily_b2500_in', selector: { entity: { domain: ['sensor'] } }, label: 'B2500 Daily Charge (kWh)' },
+            { name: 'entities.daily_b2500_out', selector: { entity: { domain: ['sensor'] } }, label: 'B2500 Daily Discharge (kWh)' },
+          ]
+        },
+        {
+          type: 'section',
+          label: 'Individual Loads'
+        },
+        {
+          type: 'grid',
+          schema: [
+            { name: 'entities.load_klima', selector: { entity: { domain: ['sensor'] } }, label: 'Klima' },
+            { name: 'entities.load_server', selector: { entity: { domain: ['sensor'] } }, label: 'Server' },
+            { name: 'entities.load_warmwasser', selector: { entity: { domain: ['sensor'] } }, label: 'Warmwasser' },
+            { name: 'entities.load_trockner', selector: { entity: { domain: ['sensor'] } }, label: 'Trockner' },
+            { name: 'entities.load_garage', selector: { entity: { domain: ['sensor'] } }, label: 'Garage' },
+            { name: 'entities.load_garten', selector: { entity: { domain: ['sensor'] } }, label: 'Garten' },
+          ]
+        },
+        {
+          type: 'section',
+          label: 'Inverter'
+        },
+        {
+          type: 'grid',
+          schema: [
+            { name: 'entities.inverter_status', selector: { entity: { domain: ['sensor'] } }, label: 'Inverter Status' },
+            { name: 'entities.inverter_freq', selector: { entity: { domain: ['sensor'] } }, label: 'Grid Frequency' },
+          ]
+        },
       ]
     };
   }
@@ -756,7 +928,29 @@ class CasaEnergyCard extends HTMLElement {
       show_title: true,
       decimal_places: 0,
       auto_scale: true,
-      animation_speed: 1
+      animation_speed: 1,
+      entities: {
+        pv_main: 'sensor.sonnenbatterie_81923_production_w',
+        pv_bkw: 'sensor.b2500_total_power_in',
+        consumption: 'sensor.sonnenbatterie_81923_consumption_w',
+        grid: 'sensor.sonnenbatterie_81923_state_grid_inout',
+        battery_main_power: 'sensor.sonnenbatterie_81923_state_battery_inout',
+        battery_main_soc: 'sensor.sonnenbatterie_81923_state_charge_user',
+        battery_b2500_1_power: 'sensor.b2500_baab_netto_power',
+        battery_b2500_1_soc: 'sensor.baab_b2500_1_baab_battery_level',
+        battery_b2500_2_power: 'sensor.b2500_b9f4_netto_power',
+        battery_b2500_2_soc: 'sensor.b9f4_b2500_2_b9f4_battery_level',
+        daily_solar: 'sensor.sonnenbatterie_81923_pv_tagesertrag',
+        daily_export: 'sensor.sonnenbatterie_81923_einspeisung_tagesertrag',
+        daily_b2500_in: 'sensor.b2500_total_daily_energy_in',
+        daily_b2500_out: 'sensor.b2500_total_daily_energy_out',
+        load_klima: 'sensor.shelly_klimaanlage_switch_0_power',
+        load_server: 'sensor.plug_proxmoxserver_power',
+        load_warmwasser: 'sensor.plug_warmwasserspeicher_power',
+        load_trockner: 'sensor.plug_trockner_power',
+        load_garage: 'sensor.shelly_garage_switch_0_power',
+        load_garten: 'sensor.shelly_garten_leistung',
+      }
     };
   }
 }
