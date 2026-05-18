@@ -457,15 +457,15 @@ class CasaEnergyCard extends HTMLElement {
       paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 520, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
     }
 
-    // Battery discharge -> Inverter
+    // Battery discharge -> Inverter (B2500 discharge directly to House, AC-coupled)
     if (this._config.show_sonnenbatterie) {
       paths.batMainToInv = this._createFlowPath(svg, ns, 280, 360, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
     }
     if (this._config.show_b2500_baab) {
-      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 360, 400, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
+      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 360, 692, 180, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 360, 420, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
+      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 360, 692, 180, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
     }
 
     this._flowPaths = paths;
