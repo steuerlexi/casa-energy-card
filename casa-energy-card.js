@@ -839,91 +839,28 @@ class CasaEnergyCard extends HTMLElement {
         { name: 'decimal_places', selector: { number: { min: 0, max: 3, step: 1 } } },
         { name: 'auto_scale', selector: { boolean: {} } },
         { name: 'animation_speed', selector: { number: { min: 0.1, max: 5, step: 0.1 } } },
-        { name: 'min_flow_watts', selector: { number: { min: 0, max: 100, step: 1 } }, label: 'Min Flow Watts (hide below)' },
-        { name: 'show_daily_values', selector: { boolean: {} }, label: 'Show Daily kWh Values' },
-        {
-          type: 'section',
-          label: 'Visible Batteries'
-        },
-        {
-          type: 'grid',
-          schema: [
-            { name: 'show_sonnenbatterie', selector: { boolean: {} }, label: 'Show Sonnenbatterie' },
-            { name: 'show_b2500_baab', selector: { boolean: {} }, label: 'Show B2500 baab' },
-            { name: 'show_b2500_b9f4', selector: { boolean: {} }, label: 'Show B2500 b9f4' },
-          ]
-        },
-        {
-          type: 'section',
-          label: 'Solar Entities'
-        },
-        {
-          type: 'grid',
-          schema: [
-            { name: 'entities.pv_main', selector: { entity: { domain: ['sensor'] } }, label: 'PV Main Power' },
-            { name: 'entities.pv_bkw', selector: { entity: { domain: ['sensor'] } }, label: 'BKW Power' },
-            { name: 'entities.daily_solar', selector: { entity: { domain: ['sensor'] } }, label: 'Daily Solar (kWh)' },
-          ]
-        },
-        {
-          type: 'section',
-          label: 'Grid & House'
-        },
-        {
-          type: 'grid',
-          schema: [
-            { name: 'entities.grid', selector: { entity: { domain: ['sensor'] } }, label: 'Grid In/Out' },
-            { name: 'entities.daily_export', selector: { entity: { domain: ['sensor'] } }, label: 'Daily Export (kWh)' },
-            { name: 'entities.consumption', selector: { entity: { domain: ['sensor'] } }, label: 'House Consumption' },
-            { name: 'entities.daily_load', selector: { entity: { domain: ['sensor'] } }, label: 'Daily Load (kWh)' },
-          ]
-        },
-        {
-          type: 'section',
-          label: 'Batteries'
-        },
-        {
-          type: 'grid',
-          schema: [
-            { name: 'entities.battery_main_power', selector: { entity: { domain: ['sensor'] } }, label: 'Main Battery Power' },
-            { name: 'entities.battery_main_soc', selector: { entity: { domain: ['sensor'] } }, label: 'Main Battery SoC' },
-            { name: 'entities.battery_b2500_1_power', selector: { entity: { domain: ['sensor'] } }, label: 'B2500-1 Power' },
-            { name: 'entities.battery_b2500_1_soc', selector: { entity: { domain: ['sensor'] } }, label: 'B2500-1 SoC' },
-            { name: 'entities.battery_b2500_2_power', selector: { entity: { domain: ['sensor'] } }, label: 'B2500-2 Power' },
-            { name: 'entities.battery_b2500_2_soc', selector: { entity: { domain: ['sensor'] } }, label: 'B2500-2 SoC' },
-          ]
-        },
-        {
-          type: 'section',
-          label: 'B2500 Daily Energy'
-        },
-        {
-          type: 'grid',
-          schema: [
-            { name: 'entities.daily_b2500_in', selector: { entity: { domain: ['sensor'] } }, label: 'B2500 Daily Charge (kWh)' },
-            { name: 'entities.daily_b2500_out', selector: { entity: { domain: ['sensor'] } }, label: 'B2500 Daily Discharge (kWh)' },
-          ]
-        },
-        {
-          type: 'section',
-          label: 'Individual Loads'
-        },
-        {
-          type: 'grid',
-          schema: [
-          ]
-        },
-        {
-          type: 'section',
-          label: 'Inverter'
-        },
-        {
-          type: 'grid',
-          schema: [
-            { name: 'entities.inverter_status', selector: { entity: { domain: ['sensor'] } }, label: 'Inverter Status' },
-            { name: 'entities.inverter_freq', selector: { entity: { domain: ['sensor'] } }, label: 'Grid Frequency' },
-          ]
-        },
+        { name: 'min_flow_watts', selector: { number: { min: 0, max: 100, step: 1 } } },
+        { name: 'show_daily_values', selector: { boolean: {} } },
+        { name: 'show_sonnenbatterie', selector: { boolean: {} } },
+        { name: 'show_b2500_baab', selector: { boolean: {} } },
+        { name: 'show_b2500_b9f4', selector: { boolean: {} } },
+        { name: 'entities.pv_main', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.pv_bkw', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.daily_solar', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.grid', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.daily_export', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.consumption', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.daily_load', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.battery_main_power', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.battery_main_soc', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.battery_b2500_1_power', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.battery_b2500_1_soc', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.battery_b2500_2_power', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.battery_b2500_2_soc', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.daily_b2500_in', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.daily_b2500_out', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.inverter_status', selector: { entity: { domain: ['sensor'] } } },
+        { name: 'entities.inverter_freq', selector: { entity: { domain: ['sensor'] } } },
       ]
     };
   }
