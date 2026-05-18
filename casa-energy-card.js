@@ -197,7 +197,7 @@ class CasaEnergyCard extends HTMLElement {
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', '0 0 800 270');
+    svg.setAttribute('viewBox', '0 0 800 300');
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svg.style.width = '100%';
     svg.style.height = 'auto';
@@ -418,24 +418,24 @@ class CasaEnergyCard extends HTMLElement {
 
     // Inverter -> Batteries (charge paths)
     if (this._config.show_sonnenbatterie) {
-      paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 200, 230, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
+      paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 200, 255, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
     }
     if (this._config.show_b2500_baab) {
-      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 230, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1');
+      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 255, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 600, 230, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
+      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 600, 255, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
     }
 
     // Battery discharge -> Inverter
     if (this._config.show_sonnenbatterie) {
-      paths.batMainToInv = this._createFlowPath(svg, ns, 200, 230, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
+      paths.batMainToInv = this._createFlowPath(svg, ns, 200, 255, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
     }
     if (this._config.show_b2500_baab) {
-      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 230, 400, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
+      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 255, 400, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 230, 420, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
+      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 255, 420, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
     }
 
     this._flowPaths = paths;
@@ -487,13 +487,13 @@ class CasaEnergyCard extends HTMLElement {
     const e = this._entities;
     const batteries = [];
     if (this._config.show_sonnenbatterie) {
-      batteries.push({ x: 200, y: 230, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc });
+      batteries.push({ x: 200, y: 255, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc });
     }
     if (this._config.show_b2500_baab) {
-      batteries.push({ x: 400, y: 230, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc });
+      batteries.push({ x: 400, y: 255, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc });
     }
     if (this._config.show_b2500_b9f4) {
-      batteries.push({ x: 600, y: 230, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc });
+      batteries.push({ x: 600, y: 255, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc });
     }
 
     this._batteryElements = [];
