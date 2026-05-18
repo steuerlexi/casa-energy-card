@@ -1,0 +1,7 @@
+{
+  "name": "Casa Energy Card",
+  "content_in_root": false,
+  "filename": "casa-energy-card.js",
+  "country": ["DE"],
+  "homeassistant": "2024.1.0"
+}
