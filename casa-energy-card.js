@@ -689,11 +689,8 @@ class CasaEnergyCard extends HTMLElement {
     this._setText('grid-daily', dailyExport > 0 ? `${dailyExport.toFixed(1)} kWh` : '');
     this._updateNodeColor('grid-value', gridColor);
 
-    // House (correct for AC-coupled B2500 discharge being subtracted from measured consumption)
-    const rawConsumption = this._getState(e.consumption);
-    const b2500_1Power = this._getState(e.battery_b2500_1_power);
-    const b2500_2Power = this._getState(e.battery_b2500_2_power);
-    const consumption = rawConsumption + Math.max(0, b2500_1Power) + Math.max(0, b2500_2Power);
+    // House
+    const consumption = this._getState(e.consumption);
     this._setText('house-value', this._formatValue(consumption));
     const dailyLoad = this._getState(e.daily_load);
     this._setText('house-daily', dailyLoad > 0 ? `${dailyLoad.toFixed(1)} kWh` : '');
