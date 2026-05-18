@@ -36,6 +36,11 @@ class CasaEnergyCard extends HTMLElement {
       decimal_places: 0,
       auto_scale: false,
       animation_speed: 1,
+      show_sonnenbatterie: true,
+      show_b2500_baab: true,
+      show_b2500_b9f4: true,
+      show_daily_values: true,
+      min_flow_watts: 10,
       colors: {
         solar: '#F6DF28',
         solar_bkw: '#ff6b35',
@@ -192,7 +197,7 @@ class CasaEnergyCard extends HTMLElement {
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', '0 0 800 540');
+    svg.setAttribute('viewBox', '0 0 800 460');
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svg.style.width = '100%';
     svg.style.height = 'auto';
@@ -201,27 +206,6 @@ class CasaEnergyCard extends HTMLElement {
 
     const defs = document.createElementNS(svgNS, 'defs');
     defs.innerHTML = `
-      <marker id="arrow-solar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.solar}"/>
-      </marker>
-      <marker id="arrow-solar-bkw" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.solar_bkw}"/>
-      </marker>
-      <marker id="arrow-grid-export" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.grid_export}"/>
-      </marker>
-      <marker id="arrow-grid-import" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.grid_import}"/>
-      </marker>
-      <marker id="arrow-battery-charge" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-        <polygon points="8,0 0,4 8,8" fill="${this._config.colors.battery_charge}"/>
-      </marker>
-      <marker id="arrow-battery-discharge" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.battery_discharge}"/>
-      </marker>
-      <marker id="arrow-consumption" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-        <polygon points="0,0 8,4 0,8" fill="${this._config.colors.consumption}"/>
-      </marker>
       <filter id="glow">
         <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
         <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
@@ -339,7 +323,7 @@ class CasaEnergyCard extends HTMLElement {
     this._attachClickHandler(valueText, entityId);
     g.appendChild(valueText);
 
-    if (dailyId) {
+    if (dailyId && this._config.show_daily_values) {
       const dailyText = document.createElementNS(ns, 'text');
       dailyText.setAttribute('text-anchor', 'middle');
       dailyText.setAttribute('y', '74');
@@ -413,37 +397,50 @@ class CasaEnergyCard extends HTMLElement {
   }
 
   _drawFlowPaths(svg, ns) {
+    const c = this._config.colors;
     const paths = {};
 
     // PV Main -> Inverter
-    paths.pvMainToInv = this._createFlowPath(svg, ns, 108, 60, 360, 90, 'grad-solar', 'arrow-solar', 'flow-pv-main');
+    paths.pvMainToInv = this._createFlowPath(svg, ns, 108, 60, 360, 90, 'grad-solar', c.solar, 'flow-pv-main');
 
     // PV BKW -> Inverter
-    paths.pvBkwToInv = this._createFlowPath(svg, ns, 108, 180, 360, 150, 'grad-solar-bkw', 'arrow-solar-bkw', 'flow-pv-bkw');
+    paths.pvBkwToInv = this._createFlowPath(svg, ns, 108, 180, 360, 150, 'grad-solar-bkw', c.solar_bkw, 'flow-pv-bkw');
 
     // Inverter -> Grid (export)
-    paths.invToGrid = this._createFlowPath(svg, ns, 440, 90, 692, 60, 'grad-grid-export', 'arrow-grid-export', 'flow-grid');
+    paths.invToGrid = this._createFlowPath(svg, ns, 440, 90, 692, 60, 'grad-grid-export', c.grid_export, 'flow-grid');
 
     // Grid -> Inverter (import) - reverse direction, separate path
-    paths.gridToInv = this._createFlowPath(svg, ns, 692, 60, 440, 90, 'grad-grid-import', 'arrow-grid-import', 'flow-grid-import');
+    paths.gridToInv = this._createFlowPath(svg, ns, 692, 60, 440, 90, 'grad-grid-import', c.grid_import, 'flow-grid-import');
 
     // Inverter -> House
-    paths.invToHouse = this._createFlowPath(svg, ns, 440, 150, 692, 180, 'grad-consumption', 'arrow-consumption', 'flow-house');
+    paths.invToHouse = this._createFlowPath(svg, ns, 440, 150, 692, 180, 'grad-consumption', c.consumption, 'flow-house');
 
     // Inverter -> Batteries (charge paths)
-    paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 200, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-main');
-    paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-b2500-1');
-    paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 600, 320, 'grad-battery-charge', 'arrow-battery-charge', 'flow-bat-b2500-2');
+    if (this._config.show_sonnenbatterie) {
+      paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 200, 260, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
+    }
+    if (this._config.show_b2500_baab) {
+      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 260, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1');
+    }
+    if (this._config.show_b2500_b9f4) {
+      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 600, 260, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
+    }
 
     // Battery discharge -> Inverter
-    paths.batMainToInv = this._createFlowPath(svg, ns, 200, 320, 380, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-main-out');
-    paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 320, 400, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-b2500-1-out');
-    paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 320, 420, 140, 'grad-battery-discharge', 'arrow-battery-discharge', 'flow-bat-b2500-2-out');
+    if (this._config.show_sonnenbatterie) {
+      paths.batMainToInv = this._createFlowPath(svg, ns, 200, 260, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
+    }
+    if (this._config.show_b2500_baab) {
+      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 260, 400, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
+    }
+    if (this._config.show_b2500_b9f4) {
+      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 600, 260, 420, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
+    }
 
     this._flowPaths = paths;
   }
 
-  _createFlowPath(svg, ns, x1, y1, x2, y2, gradientId, markerId, id) {
+  _createFlowPath(svg, ns, x1, y1, x2, y2, gradientId, arrowColor, id) {
     const path = document.createElementNS(ns, 'path');
     const midX = (x1 + x2) / 2;
     const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
@@ -452,21 +449,51 @@ class CasaEnergyCard extends HTMLElement {
     path.setAttribute('stroke', `url(#${gradientId})`);
     path.setAttribute('stroke-width', '3');
     path.setAttribute('stroke-linecap', 'round');
-    path.setAttribute('marker-end', `url(#${markerId})`);
     path.setAttribute('id', id);
     path.style.opacity = '0.6';
     path.style.pointerEvents = 'none';
     svg.insertBefore(path, svg.firstChild.nextSibling);
-    return path;
+
+    // Mid-path arrow
+    const arrow = this._createMidArrow(svg, ns, x1, y1, x2, y2, arrowColor, id + '-arrow');
+
+    return { path, arrow };
+  }
+
+  _createMidArrow(svg, ns, x1, y1, x2, y2, color, id) {
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    const dx = x2 - x1;
+    const dy = 2 * (y2 - y1);
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    const g = document.createElementNS(ns, 'g');
+    g.setAttribute('transform', `translate(${midX}, ${midY}) rotate(${angle})`);
+    g.setAttribute('id', id);
+    g.style.opacity = '0';
+    g.style.pointerEvents = 'none';
+
+    const polygon = document.createElementNS(ns, 'polygon');
+    polygon.setAttribute('points', '-6,-4 6,0 -6,4');
+    polygon.setAttribute('fill', color);
+    g.appendChild(polygon);
+
+    svg.insertBefore(g, svg.firstChild.nextSibling);
+    return g;
   }
 
   _drawBatteryBoxes(svg, ns) {
     const e = this._entities;
-    const batteries = [
-      { x: 200, y: 360, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc },
-      { x: 400, y: 360, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc },
-      { x: 600, y: 360, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc },
-    ];
+    const batteries = [];
+    if (this._config.show_sonnenbatterie) {
+      batteries.push({ x: 200, y: 300, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc });
+    }
+    if (this._config.show_b2500_baab) {
+      batteries.push({ x: 400, y: 300, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc });
+    }
+    if (this._config.show_b2500_b9f4) {
+      batteries.push({ x: 600, y: 300, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc });
+    }
 
     this._batteryElements = [];
 
@@ -654,7 +681,7 @@ class CasaEnergyCard extends HTMLElement {
   _updateFlows() {
     if (!this._flowPaths || !this._hass) return;
     const e = this._entities;
-    const MIN_FLOW_WATTS = 10;
+    const minW = this._config.min_flow_watts || 10;
 
     if (!this._flowSpeeds) this._flowSpeeds = {};
 
@@ -667,18 +694,18 @@ class CasaEnergyCard extends HTMLElement {
     const batB2500_2 = this._getState(e.battery_b2500_2_power);
 
     // PV Main -> Inverter
-    this._setFlowVisibility('flow-pv-main', pvMain > MIN_FLOW_WATTS);
+    this._setFlowVisibility('flow-pv-main', pvMain > minW);
     this._setFlowWidth('flow-pv-main', pvMain);
     this._flowSpeeds['flow-pv-main'] = this._calcFlowSpeed(pvMain);
 
     // PV BKW -> Inverter
-    this._setFlowVisibility('flow-pv-bkw', pvBkw > MIN_FLOW_WATTS);
+    this._setFlowVisibility('flow-pv-bkw', pvBkw > minW);
     this._setFlowWidth('flow-pv-bkw', pvBkw);
     this._flowSpeeds['flow-pv-bkw'] = this._calcFlowSpeed(pvBkw);
 
     // Grid flows
-    const isExport = grid > MIN_FLOW_WATTS;
-    const isImport = grid < -MIN_FLOW_WATTS;
+    const isExport = grid > minW;
+    const isImport = grid < -minW;
     this._setFlowVisibility('flow-grid', isExport);
     this._setFlowVisibility('flow-grid-import', isImport);
     this._setFlowWidth('flow-grid', Math.abs(grid));
@@ -687,13 +714,13 @@ class CasaEnergyCard extends HTMLElement {
     this._flowSpeeds['flow-grid-import'] = this._calcFlowSpeed(Math.abs(grid));
 
     // Inverter -> House
-    this._setFlowVisibility('flow-house', consumption > MIN_FLOW_WATTS);
+    this._setFlowVisibility('flow-house', consumption > minW);
     this._setFlowWidth('flow-house', consumption);
     this._flowSpeeds['flow-house'] = this._calcFlowSpeed(consumption);
 
     // Battery Main
-    const batMainCharging = batMain < -MIN_FLOW_WATTS;
-    const batMainDischarging = batMain > MIN_FLOW_WATTS;
+    const batMainCharging = batMain < -minW;
+    const batMainDischarging = batMain > minW;
     this._setFlowVisibility('flow-bat-main', batMainCharging);
     this._setFlowVisibility('flow-bat-main-out', batMainDischarging);
     this._setFlowWidth('flow-bat-main', Math.abs(batMain));
@@ -702,8 +729,8 @@ class CasaEnergyCard extends HTMLElement {
     this._flowSpeeds['flow-bat-main-out'] = this._calcFlowSpeed(Math.abs(batMain));
 
     // Battery B2500-1
-    const bat1Charging = batB2500_1 < -MIN_FLOW_WATTS;
-    const bat1Discharging = batB2500_1 > MIN_FLOW_WATTS;
+    const bat1Charging = batB2500_1 < -minW;
+    const bat1Discharging = batB2500_1 > minW;
     this._setFlowVisibility('flow-bat-b2500-1', bat1Charging);
     this._setFlowVisibility('flow-bat-b2500-1-out', bat1Discharging);
     this._setFlowWidth('flow-bat-b2500-1', Math.abs(batB2500_1));
@@ -712,8 +739,8 @@ class CasaEnergyCard extends HTMLElement {
     this._flowSpeeds['flow-bat-b2500-1-out'] = this._calcFlowSpeed(Math.abs(batB2500_1));
 
     // Battery B2500-2
-    const bat2Charging = batB2500_2 < -MIN_FLOW_WATTS;
-    const bat2Discharging = batB2500_2 > MIN_FLOW_WATTS;
+    const bat2Charging = batB2500_2 < -minW;
+    const bat2Discharging = batB2500_2 > minW;
     this._setFlowVisibility('flow-bat-b2500-2', bat2Charging);
     this._setFlowVisibility('flow-bat-b2500-2-out', bat2Discharging);
     this._setFlowWidth('flow-bat-b2500-2', Math.abs(batB2500_2));
@@ -730,8 +757,10 @@ class CasaEnergyCard extends HTMLElement {
   }
 
   _setFlowVisibility(id, visible) {
-    const el = this.querySelector(`#${id}`);
-    if (el) el.style.opacity = visible ? '0.8' : '0';
+    const path = this.querySelector(`#${id}`);
+    if (path) path.style.opacity = visible ? '0.8' : '0';
+    const arrow = this.querySelector(`#${id}-arrow`);
+    if (arrow) arrow.style.opacity = visible ? '0.9' : '0';
   }
 
   _setFlowWidth(id, power) {
@@ -769,8 +798,9 @@ class CasaEnergyCard extends HTMLElement {
     const speeds = this._flowSpeeds || {};
 
     for (const key in paths) {
-      const path = paths[key];
-      if (!path) continue;
+      const obj = paths[key];
+      if (!obj || !obj.path) continue;
+      const path = obj.path;
       const style = window.getComputedStyle(path);
       if (style.opacity === '0') continue;
 
@@ -809,6 +839,20 @@ class CasaEnergyCard extends HTMLElement {
         { name: 'decimal_places', selector: { number: { min: 0, max: 3, step: 1 } } },
         { name: 'auto_scale', selector: { boolean: {} } },
         { name: 'animation_speed', selector: { number: { min: 0.1, max: 5, step: 0.1 } } },
+        { name: 'min_flow_watts', selector: { number: { min: 0, max: 100, step: 1 } }, label: 'Min Flow Watts (hide below)' },
+        { name: 'show_daily_values', selector: { boolean: {} }, label: 'Show Daily kWh Values' },
+        {
+          type: 'section',
+          label: 'Visible Batteries'
+        },
+        {
+          type: 'grid',
+          schema: [
+            { name: 'show_sonnenbatterie', selector: { boolean: {} }, label: 'Show Sonnenbatterie' },
+            { name: 'show_b2500_baab', selector: { boolean: {} }, label: 'Show B2500 baab' },
+            { name: 'show_b2500_b9f4', selector: { boolean: {} }, label: 'Show B2500 b9f4' },
+          ]
+        },
         {
           type: 'section',
           label: 'Solar Entities'
@@ -891,6 +935,11 @@ class CasaEnergyCard extends HTMLElement {
       decimal_places: 0,
       auto_scale: false,
       animation_speed: 1,
+      show_sonnenbatterie: true,
+      show_b2500_baab: true,
+      show_b2500_b9f4: true,
+      show_daily_values: true,
+      min_flow_watts: 10,
       entities: {
         pv_main: 'sensor.sonnenbatterie_81923_production_w',
         pv_bkw: 'sensor.b2500_total_power_in',

@@ -86,10 +86,15 @@ entities:
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `title` | string | `"Casa Energy"` | Card title |
-| `show_title` | boolean | `true` | Show title header |
+| `show_title` | boolean | `false` | Show title header |
 | `decimal_places` | number | `0` | Decimal places for values |
-| `auto_scale` | boolean | `true` | Auto-switch W → kW |
+| `auto_scale` | boolean | `false` | Auto-switch W → kW |
 | `animation_speed` | number | `1` | Flow animation speed multiplier |
+| `min_flow_watts` | number | `10` | Hide flow animation below this wattage |
+| `show_daily_values` | boolean | `true` | Show daily kWh subtext under nodes |
+| `show_sonnenbatterie` | boolean | `true` | Show main battery box |
+| `show_b2500_baab` | boolean | `true` | Show B2500 baab battery box |
+| `show_b2500_b9f4` | boolean | `true` | Show B2500 b9f4 battery box |
 | `colors` | object | see above | Color overrides |
 | `entities` | object | see above | Entity ID overrides |
 
