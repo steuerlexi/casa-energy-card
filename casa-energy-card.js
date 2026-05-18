@@ -761,7 +761,7 @@ class CasaEnergyCard extends HTMLElement {
   }
 }
 
-customElements.define('casa-energy-card', HeckmannEnergyFlowCard);
+customElements.define('casa-energy-card', CasaEnergyCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'casa-energy-card',
