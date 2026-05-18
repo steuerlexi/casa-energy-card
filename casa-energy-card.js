@@ -291,14 +291,14 @@ class CasaEnergyCard extends HTMLElement {
     circle.setAttribute('stroke-width', '2');
     g.appendChild(circle);
 
-    const iconText = document.createElementNS(ns, 'text');
-    iconText.setAttribute('text-anchor', 'middle');
-    iconText.setAttribute('dy', '5');
-    iconText.setAttribute('font-size', '20');
-    iconText.textContent = this._getIconChar(icon);
-    iconText.setAttribute('fill', color);
-    iconText.style.pointerEvents = 'none';
-    g.appendChild(iconText);
+    const iconImg = document.createElementNS(ns, 'image');
+    iconImg.setAttribute('href', this._getOpenMojiUrl(icon));
+    iconImg.setAttribute('x', '-14');
+    iconImg.setAttribute('y', '-14');
+    iconImg.setAttribute('width', '28');
+    iconImg.setAttribute('height', '28');
+    iconImg.style.pointerEvents = 'none';
+    g.appendChild(iconImg);
 
     const labelText = document.createElementNS(ns, 'text');
     labelText.setAttribute('text-anchor', 'middle');
@@ -354,14 +354,14 @@ class CasaEnergyCard extends HTMLElement {
     rect.setAttribute('stroke-width', '2');
     g.appendChild(rect);
 
-    const iconText = document.createElementNS(ns, 'text');
-    iconText.setAttribute('text-anchor', 'middle');
-    iconText.setAttribute('dy', '5');
-    iconText.setAttribute('font-size', '20');
-    iconText.textContent = this._getIconChar('mdi:current-ac');
-    iconText.setAttribute('fill', this._config.colors.inverter);
-    iconText.style.pointerEvents = 'none';
-    g.appendChild(iconText);
+    const iconImg = document.createElementNS(ns, 'image');
+    iconImg.setAttribute('href', this._getOpenMojiUrl('mdi:current-ac'));
+    iconImg.setAttribute('x', '-14');
+    iconImg.setAttribute('y', '-14');
+    iconImg.setAttribute('width', '28');
+    iconImg.setAttribute('height', '28');
+    iconImg.style.pointerEvents = 'none';
+    g.appendChild(iconImg);
 
     const statusText = document.createElementNS(ns, 'text');
     statusText.setAttribute('text-anchor', 'middle');
@@ -377,23 +377,24 @@ class CasaEnergyCard extends HTMLElement {
     return g;
   }
 
-  _getIconChar(iconName) {
+  _getOpenMojiUrl(iconName) {
     const iconMap = {
-      'mdi:solar-power': '☀️',
-      'mdi:solar-panel': '☀️',
-      'mdi:transmission-tower': '⚡',
-      'mdi:home-lightning-bolt': '🏠',
-      'mdi:current-ac': '🔌',
-      'mdi:battery': '🔋',
-      'mdi:battery-charging': '⚡',
-      'mdi:air-conditioner': '❄️',
-      'mdi:monitor': '🖥️',
-      'mdi:water-boiler': '♨️',
-      'mdi:tumble-dryer': '👕',
-      'mdi:garage': '🚗',
-      'mdi:tree-outline': '🌳'
+      'mdi:solar-power': 'solar-energy',
+      'mdi:solar-panel': 'solar-energy',
+      'mdi:transmission-tower': 'high-voltage',
+      'mdi:home-lightning-bolt': 'house',
+      'mdi:current-ac': 'plug',
+      'mdi:battery': 'battery',
+      'mdi:battery-charging': 'battery',
+      'mdi:air-conditioner': 'snowflake',
+      'mdi:monitor': 'desktop-computer',
+      'mdi:water-boiler': 'hot-springs',
+      'mdi:tumble-dryer': 't-shirt',
+      'mdi:garage': 'automobile',
+      'mdi:tree-outline': 'deciduous-tree'
     };
-    return iconMap[iconName] || '⬤';
+    const openmojiName = iconMap[iconName] || 'red-circle';
+    return `https://api.iconify.design/openmoji/${openmojiName}.svg`;
   }
 
   _drawFlowPaths(svg, ns) {
