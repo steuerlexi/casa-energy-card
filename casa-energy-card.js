@@ -227,7 +227,7 @@ class CasaEnergyCard extends HTMLElement {
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', '0 0 800 370');
+    svg.setAttribute('viewBox', '0 0 800 400');
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svg.style.width = '100%';
     svg.style.height = 'auto';
@@ -448,24 +448,24 @@ class CasaEnergyCard extends HTMLElement {
 
     // Inverter -> Batteries (charge paths)
     if (this._config.show_sonnenbatterie) {
-      paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 280, 300, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
+      paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 280, 330, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
     }
     if (this._config.show_b2500_baab) {
-      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 300, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1');
+      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 330, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 520, 300, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
+      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 520, 330, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
     }
 
     // Battery discharge -> Inverter
     if (this._config.show_sonnenbatterie) {
-      paths.batMainToInv = this._createFlowPath(svg, ns, 280, 300, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
+      paths.batMainToInv = this._createFlowPath(svg, ns, 280, 330, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
     }
     if (this._config.show_b2500_baab) {
-      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 300, 400, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
+      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 330, 400, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 300, 420, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
+      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 330, 420, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
     }
 
     this._flowPaths = paths;
@@ -517,13 +517,13 @@ class CasaEnergyCard extends HTMLElement {
     const e = this._entities;
     const batteries = [];
     if (this._config.show_sonnenbatterie) {
-      batteries.push({ x: 280, y: 300, label: 'Sonnenbatterie', powerId: 'bat-main-power', socId: 'bat-main-soc', capacityId: 'bat-main-cap', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc, entityCapacity: e.battery_main_capacity });
+      batteries.push({ x: 280, y: 330, label: 'Sonnenbatterie', powerId: 'bat-main-power', socId: 'bat-main-soc', capacityId: 'bat-main-cap', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc, entityCapacity: e.battery_main_capacity });
     }
     if (this._config.show_b2500_baab) {
-      batteries.push({ x: 400, y: 300, label: 'B2500 baab', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', capacityId: 'bat-b2500-1-cap', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc, entityCapacity: e.battery_b2500_1_capacity });
+      batteries.push({ x: 400, y: 330, label: 'B2500 baab', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', capacityId: 'bat-b2500-1-cap', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc, entityCapacity: e.battery_b2500_1_capacity });
     }
     if (this._config.show_b2500_b9f4) {
-      batteries.push({ x: 520, y: 300, label: 'B2500 b9f4', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', capacityId: 'bat-b2500-2-cap', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc, entityCapacity: e.battery_b2500_2_capacity });
+      batteries.push({ x: 520, y: 330, label: 'B2500 b9f4', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', capacityId: 'bat-b2500-2-cap', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc, entityCapacity: e.battery_b2500_2_capacity });
     }
 
     this._batteryElements = [];
@@ -689,8 +689,11 @@ class CasaEnergyCard extends HTMLElement {
     this._setText('grid-daily', dailyExport > 0 ? `${dailyExport.toFixed(1)} kWh` : '');
     this._updateNodeColor('grid-value', gridColor);
 
-    // House
-    const consumption = this._getState(e.consumption);
+    // House (correct for AC-coupled B2500 discharge being subtracted from measured consumption)
+    const rawConsumption = this._getState(e.consumption);
+    const b2500_1Power = this._getState(e.battery_b2500_1_power);
+    const b2500_2Power = this._getState(e.battery_b2500_2_power);
+    const consumption = rawConsumption + Math.max(0, b2500_1Power) + Math.max(0, b2500_2Power);
     this._setText('house-value', this._formatValue(consumption));
     const dailyLoad = this._getState(e.daily_load);
     this._setText('house-daily', dailyLoad > 0 ? `${dailyLoad.toFixed(1)} kWh` : '');
