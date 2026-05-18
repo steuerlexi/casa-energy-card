@@ -34,7 +34,7 @@ class CasaEnergyCard extends HTMLElement {
       title: 'Casa Energy',
       show_title: true,
       decimal_places: 0,
-      auto_scale: true,
+      auto_scale: false,
       animation_speed: 1,
       colors: {
         solar: '#F6DF28',
@@ -401,21 +401,21 @@ class CasaEnergyCard extends HTMLElement {
 
   _getIconChar(iconName) {
     const iconMap = {
-      'mdi:solar-power': '☀',
-      'mdi:solar-panel': '☀',
+      'mdi:solar-power': '☀️',
+      'mdi:solar-panel': '☀️',
       'mdi:transmission-tower': '⚡',
-      'mdi:home-lightning-bolt': '⌂',
-      'mdi:current-ac': '∿',
-      'mdi:battery': 'ὐB',
+      'mdi:home-lightning-bolt': '🏠',
+      'mdi:current-ac': '🔌',
+      'mdi:battery': '🔋',
       'mdi:battery-charging': '⚡',
-      'mdi:air-conditioner': '❄',
-      'mdi:monitor': 'Ὓ5',
-      'mdi:water-boiler': '♨',
-      'mdi:tumble-dryer': 'ᾟA',
-      'mdi:garage': 'Ἶ0',
-      'mdi:tree-outline': 'ἳ1'
+      'mdi:air-conditioner': '❄️',
+      'mdi:monitor': '🖥️',
+      'mdi:water-boiler': '♨️',
+      'mdi:tumble-dryer': '👕',
+      'mdi:garage': '🚗',
+      'mdi:tree-outline': '🌳'
     };
-    return iconMap[iconName] || '●';
+    return iconMap[iconName] || '⬤';
   }
 
   _drawFlowPaths(svg, ns) {
@@ -960,7 +960,7 @@ class CasaEnergyCard extends HTMLElement {
       title: 'Casa Energy',
       show_title: true,
       decimal_places: 0,
-      auto_scale: true,
+      auto_scale: false,
       animation_speed: 1,
       entities: {
         pv_main: 'sensor.sonnenbatterie_81923_production_w',
