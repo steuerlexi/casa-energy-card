@@ -8,6 +8,7 @@ class CasaEnergyCard extends HTMLElement {
     this._animationFrame = null;
     this._initialized = false;
     this._intersectionObserver = null;
+    this._domCache = {};
   }
 
   connectedCallback() {
@@ -48,6 +49,7 @@ class CasaEnergyCard extends HTMLElement {
         grid_import: '#f44336',
         battery_charge: '#4caf50',
         battery_discharge: '#ff9800',
+        battery_discharge_b2500: '#e65100',
         consumption: '#B62D00',
         inverter: '#9e9e9e',
         background: 'var(--card-background-color, #fff)',
@@ -213,6 +215,7 @@ class CasaEnergyCard extends HTMLElement {
     card.style.color = this._config.colors.text;
     card.style.display = 'block';
     card.style.width = '100%';
+    card.style.minWidth = '360px';
     card.style.fontFamily = 'var(--paper-font-body1_-_font-family), Roboto, sans-serif';
 
     if (this._config.show_title) {
@@ -275,11 +278,22 @@ class CasaEnergyCard extends HTMLElement {
         <stop offset="50%" stop-color="${this._config.colors.consumption}" stop-opacity="1"/>
         <stop offset="100%" stop-color="${this._config.colors.consumption}" stop-opacity="0.2"/>
       </linearGradient>
+      <linearGradient id="grad-battery-discharge-b2500-1" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="${this._config.colors.battery_discharge_b2500}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.battery_discharge_b2500}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.battery_discharge_b2500}" stop-opacity="0.2"/>
+      </linearGradient>
+      <linearGradient id="grad-battery-discharge-b2500-2" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="${this._config.colors.battery_discharge_b2500}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${this._config.colors.battery_discharge_b2500}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${this._config.colors.battery_discharge_b2500}" stop-opacity="0.2"/>
+      </linearGradient>
     `;
     svg.appendChild(defs);
 
     this._svg = svg;
     this._svgNS = svgNS;
+    this._domCache = {}; // clear DOM cache on re-render
 
     this._drawStaticElements(svg, svgNS);
     this._drawFlowPaths(svg, svgNS);
@@ -450,11 +464,12 @@ class CasaEnergyCard extends HTMLElement {
     if (this._config.show_sonnenbatterie) {
       paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 280, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
     }
+    // B2500 charge from BKW (AC-coupled, dashed lines)
     if (this._config.show_b2500_baab) {
-      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 420, 150, 400, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1');
+      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 108, 180, 400, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1', '8, 4');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 440, 150, 520, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2');
+      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 108, 180, 520, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2', '8, 4');
     }
 
     // Battery discharge -> Inverter (B2500 discharge directly to House, AC-coupled)
@@ -462,16 +477,16 @@ class CasaEnergyCard extends HTMLElement {
       paths.batMainToInv = this._createFlowPath(svg, ns, 280, 360, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
     }
     if (this._config.show_b2500_baab) {
-      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 360, 692, 180, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-1-out');
+      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 360, 692, 210, 'grad-battery-discharge-b2500-1', c.battery_discharge_b2500, 'flow-bat-b2500-1-out', '8, 4');
     }
     if (this._config.show_b2500_b9f4) {
-      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 360, 692, 180, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-b2500-2-out');
+      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 360, 692, 150, 'grad-battery-discharge-b2500-2', c.battery_discharge_b2500, 'flow-bat-b2500-2-out', '8, 4');
     }
 
     this._flowPaths = paths;
   }
 
-  _createFlowPath(svg, ns, x1, y1, x2, y2, gradientId, arrowColor, id) {
+  _createFlowPath(svg, ns, x1, y1, x2, y2, gradientId, arrowColor, id, dashArray = null) {
     const path = document.createElementNS(ns, 'path');
     const midX = (x1 + x2) / 2;
     const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
@@ -480,6 +495,9 @@ class CasaEnergyCard extends HTMLElement {
     path.setAttribute('stroke', `url(#${gradientId})`);
     path.setAttribute('stroke-width', '3');
     path.setAttribute('stroke-linecap', 'round');
+    if (dashArray) {
+      path.setAttribute('stroke-dasharray', dashArray);
+    }
     path.setAttribute('id', id);
     path.style.opacity = '0.6';
     path.style.pointerEvents = 'none';
@@ -731,18 +749,25 @@ class CasaEnergyCard extends HTMLElement {
     this._updateFlows();
   }
 
+  _getCachedElement(id) {
+    if (!this._domCache[id]) {
+      this._domCache[id] = this.querySelector(`#${id}`);
+    }
+    return this._domCache[id];
+  }
+
   _setText(id, text) {
-    const el = this.querySelector(`#${id}`);
+    const el = this._getCachedElement(id);
     if (el) el.textContent = text;
   }
 
   _updateNodeColor(id, color) {
-    const el = this.querySelector(`#${id}`);
+    const el = this._getCachedElement(id);
     if (el) el.setAttribute('fill', color);
   }
 
   _setBatteryBar(id, soc, isCharging) {
-    const el = this.querySelector(`#${id}`);
+    const el = this._getCachedElement(id);
     if (!el) return;
     const width = (soc / 100) * 92;
     el.setAttribute('width', Math.max(0, width));
@@ -751,7 +776,7 @@ class CasaEnergyCard extends HTMLElement {
     el.setAttribute('fill', color);
 
     // Also update terminal color
-    const term = this.querySelector(`#${id}-term`);
+    const term = this._getCachedElement(`${id}-term`);
     if (term) term.setAttribute('fill', color);
   }
 
@@ -834,14 +859,14 @@ class CasaEnergyCard extends HTMLElement {
   }
 
   _setFlowVisibility(id, visible) {
-    const path = this.querySelector(`#${id}`);
+    const path = this._getCachedElement(id);
     if (path) path.style.opacity = visible ? '0.8' : '0';
-    const arrow = this.querySelector(`#${id}-arrow`);
+    const arrow = this._getCachedElement(`${id}-arrow`);
     if (arrow) arrow.style.opacity = visible ? '0.9' : '0';
   }
 
   _setFlowWidth(id, power) {
-    const el = this.querySelector(`#${id}`);
+    const el = this._getCachedElement(id);
     if (!el) return;
     const minWidth = 1;
     const maxWidth = 8;
@@ -850,7 +875,7 @@ class CasaEnergyCard extends HTMLElement {
   }
 
   _setFlowColor(id, color) {
-    const el = this.querySelector(`#${id}`);
+    const el = this._getCachedElement(id);
     if (el) el.setAttribute('stroke', color);
   }
 
@@ -884,7 +909,8 @@ class CasaEnergyCard extends HTMLElement {
       const length = path.getTotalLength ? path.getTotalLength() : 200;
       const pathSpeed = speeds[key] || 0.5;
       const offset = -((now / (15 / pathSpeed)) % length);
-      path.style.strokeDasharray = '10, 15';
+      const existingDash = path.getAttribute('stroke-dasharray');
+      path.style.strokeDasharray = existingDash || '10, 15';
       path.style.strokeDashoffset = offset;
     }
   }
