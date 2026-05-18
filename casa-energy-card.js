@@ -147,6 +147,33 @@ class CasaEnergyCard extends HTMLElement {
     return Math.round(val) + ' ' + unit;
   }
 
+  _getSocColor(soc) {
+    // Interpolate from red (0%) → orange (30%) → yellow (60%) → green (100%)
+    const s = Math.max(0, Math.min(100, soc));
+    if (s >= 60) {
+      // Yellow → Green
+      const t = (s - 60) / 40;
+      const r = Math.round(255 + (76 - 255) * t);
+      const g = Math.round(152 + (175 - 152) * t);
+      const b = Math.round(0 + (80 - 0) * t);
+      return `rgb(${r},${g},${b})`;
+    } else if (s >= 30) {
+      // Orange → Yellow
+      const t = (s - 30) / 30;
+      const r = Math.round(244 + (255 - 244) * t);
+      const g = Math.round(67 + (152 - 67) * t);
+      const b = Math.round(54 + (0 - 54) * t);
+      return `rgb(${r},${g},${b})`;
+    } else {
+      // Red → Orange
+      const t = s / 30;
+      const r = Math.round(244 + (244 - 244) * t);
+      const g = Math.round(67 * t);
+      const b = Math.round(54 + (54 - 54) * t);
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+
   _fireMoreInfo(entityId) {
     if (!entityId) return;
     const event = new Event('hass-more-info', {
@@ -490,13 +517,13 @@ class CasaEnergyCard extends HTMLElement {
     const e = this._entities;
     const batteries = [];
     if (this._config.show_sonnenbatterie) {
-      batteries.push({ x: 280, y: 300, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', capacityId: 'bat-main-cap', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc, entityCapacity: e.battery_main_capacity });
+      batteries.push({ x: 280, y: 300, label: 'Sonnenbatterie', powerId: 'bat-main-power', socId: 'bat-main-soc', capacityId: 'bat-main-cap', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc, entityCapacity: e.battery_main_capacity });
     }
     if (this._config.show_b2500_baab) {
-      batteries.push({ x: 400, y: 300, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', capacityId: 'bat-b2500-1-cap', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc, entityCapacity: e.battery_b2500_1_capacity });
+      batteries.push({ x: 400, y: 300, label: 'B2500 baab', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', capacityId: 'bat-b2500-1-cap', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc, entityCapacity: e.battery_b2500_1_capacity });
     }
     if (this._config.show_b2500_b9f4) {
-      batteries.push({ x: 520, y: 300, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', capacityId: 'bat-b2500-2-cap', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc, entityCapacity: e.battery_b2500_2_capacity });
+      batteries.push({ x: 520, y: 300, label: 'B2500 b9f4', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', capacityId: 'bat-b2500-2-cap', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc, entityCapacity: e.battery_b2500_2_capacity });
     }
 
     this._batteryElements = [];
@@ -504,69 +531,94 @@ class CasaEnergyCard extends HTMLElement {
     for (const bat of batteries) {
       const g = document.createElementNS(ns, 'g');
       g.setAttribute('transform', `translate(${bat.x}, ${bat.y})`);
+      g.setAttribute('class', 'battery-box');
 
       // Hit area for clicking
       const hitArea = document.createElementNS(ns, 'rect');
-      hitArea.setAttribute('x', '-50');
-      hitArea.setAttribute('y', '-35');
-      hitArea.setAttribute('width', '100');
-      hitArea.setAttribute('height', '70');
+      hitArea.setAttribute('x', '-55');
+      hitArea.setAttribute('y', '-38');
+      hitArea.setAttribute('width', '110');
+      hitArea.setAttribute('height', '78');
       hitArea.setAttribute('fill', 'transparent');
       hitArea.setAttribute('cursor', 'pointer');
       this._attachClickHandler(hitArea, bat.entityPower || bat.entitySoc);
       g.appendChild(hitArea);
 
-      // Battery outline
+      // Shadow for depth
+      const shadow = document.createElementNS(ns, 'rect');
+      shadow.setAttribute('x', '-47');
+      shadow.setAttribute('y', '-22');
+      shadow.setAttribute('width', '94');
+      shadow.setAttribute('height', '54');
+      shadow.setAttribute('rx', '6');
+      shadow.setAttribute('fill', 'rgba(0,0,0,0.08)');
+      g.appendChild(shadow);
+
+      // Battery outline background
       const rect = document.createElementNS(ns, 'rect');
-      rect.setAttribute('x', '-45');
+      rect.setAttribute('x', '-48');
       rect.setAttribute('y', '-25');
-      rect.setAttribute('width', '90');
-      rect.setAttribute('height', '50');
-      rect.setAttribute('rx', '4');
+      rect.setAttribute('width', '96');
+      rect.setAttribute('height', '52');
+      rect.setAttribute('rx', '6');
       rect.setAttribute('fill', 'var(--card-background-color, #fff)');
-      rect.setAttribute('stroke', bat.color);
-      rect.setAttribute('stroke-width', '2');
+      rect.setAttribute('stroke', 'var(--divider-color, #e0e0e0)');
+      rect.setAttribute('stroke-width', '1');
       g.appendChild(rect);
 
-      // Battery positive terminal
+      // Battery positive terminal (top center)
       const term = document.createElementNS(ns, 'rect');
-      term.setAttribute('x', '-8');
-      term.setAttribute('y', '-30');
-      term.setAttribute('width', '16');
-      term.setAttribute('height', '5');
-      term.setAttribute('fill', bat.color);
+      term.setAttribute('x', '-10');
+      term.setAttribute('y', '-32');
+      term.setAttribute('width', '20');
+      term.setAttribute('height', '7');
+      term.setAttribute('rx', '2');
+      term.setAttribute('fill', '#9e9e9e');
+      term.setAttribute('id', `${bat.socBarId}-term`);
       g.appendChild(term);
 
-      // SoC fill
+      // SoC fill bar (colored by SoC)
       const fill = document.createElementNS(ns, 'rect');
-      fill.setAttribute('x', '-43');
+      fill.setAttribute('x', '-46');
       fill.setAttribute('y', '-23');
-      fill.setAttribute('width', '86');
+      fill.setAttribute('width', '0');
       fill.setAttribute('height', '46');
-      fill.setAttribute('rx', '2');
-      fill.setAttribute('fill', bat.color);
-      fill.setAttribute('fill-opacity', '0.2');
+      fill.setAttribute('rx', '4');
+      fill.setAttribute('fill', '#4caf50');
+      fill.setAttribute('fill-opacity', '0.25');
       fill.setAttribute('id', bat.socBarId);
       g.appendChild(fill);
 
-      // Label
+      // SoC border line on top of fill
+      const border = document.createElementNS(ns, 'rect');
+      border.setAttribute('x', '-46');
+      border.setAttribute('y', '-23');
+      border.setAttribute('width', '92');
+      border.setAttribute('height', '46');
+      border.setAttribute('rx', '4');
+      border.setAttribute('fill', 'none');
+      border.setAttribute('stroke', 'var(--divider-color, #e0e0e0)');
+      border.setAttribute('stroke-width', '1');
+      g.appendChild(border);
+
+      // Label above battery
       const label = document.createElementNS(ns, 'text');
       label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('y', '-32');
+      label.setAttribute('y', '-38');
       label.setAttribute('font-size', '10');
-      label.setAttribute('font-weight', '500');
+      label.setAttribute('font-weight', '600');
       label.setAttribute('fill', this._config.colors.text);
       label.textContent = bat.label;
       label.style.pointerEvents = 'none';
       g.appendChild(label);
 
-      // Power value (clickable)
+      // Power value centered
       const power = document.createElementNS(ns, 'text');
       power.setAttribute('text-anchor', 'middle');
-      power.setAttribute('y', '5');
-      power.setAttribute('font-size', '12');
-      power.setAttribute('font-weight', '600');
-      power.setAttribute('fill', bat.color);
+      power.setAttribute('y', '3');
+      power.setAttribute('font-size', '13');
+      power.setAttribute('font-weight', '700');
+      power.setAttribute('fill', this._config.colors.text);
       power.setAttribute('id', bat.powerId);
       power.textContent = '0 W';
       power.style.cursor = bat.entityPower ? 'pointer' : 'default';
@@ -574,11 +626,12 @@ class CasaEnergyCard extends HTMLElement {
       this._attachClickHandler(power, bat.entityPower);
       g.appendChild(power);
 
-      // SoC value (clickable)
+      // SoC value below power
       const soc = document.createElementNS(ns, 'text');
       soc.setAttribute('text-anchor', 'middle');
-      soc.setAttribute('y', '20');
-      soc.setAttribute('font-size', '10');
+      soc.setAttribute('y', '18');
+      soc.setAttribute('font-size', '11');
+      soc.setAttribute('font-weight', '500');
       soc.setAttribute('fill', this._config.colors.text_secondary);
       soc.setAttribute('id', bat.socId);
       soc.textContent = '0%';
@@ -622,15 +675,9 @@ class CasaEnergyCard extends HTMLElement {
     this._setText('pv-main-daily', dailySolar > 0 ? `${dailySolar.toFixed(1)} kWh` : '');
     this._setText('pv-bkw-value', this._formatValue(pvBkw));
 
-    // B2500 daily energy
+    // B2500 daily energy (only show "in")
     const dailyB2500In = this._getState(e.daily_b2500_in);
-    const dailyB2500Out = this._getState(e.daily_b2500_out);
-    let bkwDailyText = '';
-    if (dailyB2500In > 0 || dailyB2500Out > 0) {
-      bkwDailyText = `${dailyB2500In.toFixed(1)} in / ${dailyB2500Out.toFixed(1)} out kWh`;
-    } else if (dailyB2500In > 0) {
-      bkwDailyText = `${dailyB2500In.toFixed(1)} kWh`;
-    }
+    const bkwDailyText = dailyB2500In > 0 ? `${dailyB2500In.toFixed(1)} kWh` : '';
     this._setText('pv-bkw-daily', bkwDailyText);
 
     // Grid
@@ -660,6 +707,7 @@ class CasaEnergyCard extends HTMLElement {
     this._setText('bat-main-soc', `${Math.round(batMainSoc)}%`);
     this._setText('bat-main-cap', batMainCap > 0 ? `${(batMainCap / 1000).toFixed(1)} kWh` : '');
     this._setBatteryBar('bat-main-bar', batMainSoc, batMainPower < 0);
+    this._updateNodeColor('bat-main-soc', this._getSocColor(batMainSoc));
 
     const batB2500_1Power = this._getState(e.battery_b2500_1_power);
     const batB2500_1Soc = this._getState(e.battery_b2500_1_soc);
@@ -668,6 +716,7 @@ class CasaEnergyCard extends HTMLElement {
     this._setText('bat-b2500-1-soc', `${Math.round(batB2500_1Soc)}%`);
     this._setText('bat-b2500-1-cap', batB2500_1Cap > 0 ? `${(batB2500_1Cap / 1000).toFixed(1)} kWh` : '');
     this._setBatteryBar('bat-b2500-1-bar', batB2500_1Soc, batB2500_1Power < 0);
+    this._updateNodeColor('bat-b2500-1-soc', this._getSocColor(batB2500_1Soc));
 
     const batB2500_2Power = this._getState(e.battery_b2500_2_power);
     const batB2500_2Soc = this._getState(e.battery_b2500_2_soc);
@@ -676,6 +725,7 @@ class CasaEnergyCard extends HTMLElement {
     this._setText('bat-b2500-2-soc', `${Math.round(batB2500_2Soc)}%`);
     this._setText('bat-b2500-2-cap', batB2500_2Cap > 0 ? `${(batB2500_2Cap / 1000).toFixed(1)} kWh` : '');
     this._setBatteryBar('bat-b2500-2-bar', batB2500_2Soc, batB2500_2Power < 0);
+    this._updateNodeColor('bat-b2500-2-soc', this._getSocColor(batB2500_2Soc));
 
     // Update flow visibility and colors
     this._updateFlows();
@@ -694,9 +744,15 @@ class CasaEnergyCard extends HTMLElement {
   _setBatteryBar(id, soc, isCharging) {
     const el = this.querySelector(`#${id}`);
     if (!el) return;
-    const width = (soc / 100) * 86;
+    const width = (soc / 100) * 92;
     el.setAttribute('width', Math.max(0, width));
-    el.setAttribute('fill-opacity', isCharging ? '0.4' : '0.2');
+    el.setAttribute('fill-opacity', isCharging ? '0.35' : '0.22');
+    const color = this._getSocColor(soc);
+    el.setAttribute('fill', color);
+
+    // Also update terminal color
+    const term = this.querySelector(`#${id}-term`);
+    if (term) term.setAttribute('fill', color);
   }
 
   _updateFlows() {
