@@ -32,7 +32,7 @@ class CasaEnergyCard extends HTMLElement {
   setConfig(config) {
     const defaults = {
       title: 'Casa Energy',
-      show_title: true,
+      show_title: false,
       decimal_places: 0,
       auto_scale: false,
       animation_speed: 1,
@@ -177,6 +177,7 @@ class CasaEnergyCard extends HTMLElement {
     card.style.background = this._config.colors.background;
     card.style.color = this._config.colors.text;
     card.style.display = 'block';
+    card.style.width = '100%';
     card.style.fontFamily = 'var(--paper-font-body1_-_font-family), Roboto, sans-serif';
 
     if (this._config.show_title) {
@@ -195,7 +196,7 @@ class CasaEnergyCard extends HTMLElement {
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svg.style.width = '100%';
     svg.style.height = 'auto';
-    svg.style.maxHeight = '540px';
+    svg.style.maxHeight = 'none';
     svg.style.display = 'block';
 
     const defs = document.createElementNS(svgNS, 'defs');
@@ -463,8 +464,8 @@ class CasaEnergyCard extends HTMLElement {
     const e = this._entities;
     const batteries = [
       { x: 200, y: 360, label: 'Sonnenbatterie', color: '#4caf50', powerId: 'bat-main-power', socId: 'bat-main-soc', socBarId: 'bat-main-bar', entityPower: e.battery_main_power, entitySoc: e.battery_main_soc },
-      { x: 400, y: 360, label: 'B2500-1', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc },
-      { x: 600, y: 360, label: 'B2500-2', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc },
+      { x: 400, y: 360, label: 'B2500 baab', color: '#ff6b35', powerId: 'bat-b2500-1-power', socId: 'bat-b2500-1-soc', socBarId: 'bat-b2500-1-bar', entityPower: e.battery_b2500_1_power, entitySoc: e.battery_b2500_1_soc },
+      { x: 600, y: 360, label: 'B2500 b9f4', color: '#ff8c42', powerId: 'bat-b2500-2-power', socId: 'bat-b2500-2-soc', socBarId: 'bat-b2500-2-bar', entityPower: e.battery_b2500_2_power, entitySoc: e.battery_b2500_2_soc },
     ];
 
     this._batteryElements = [];
@@ -861,7 +862,7 @@ class CasaEnergyCard extends HTMLElement {
   static getStubConfig() {
     return {
       title: 'Casa Energy',
-      show_title: true,
+      show_title: false,
       decimal_places: 0,
       auto_scale: false,
       animation_speed: 1,
