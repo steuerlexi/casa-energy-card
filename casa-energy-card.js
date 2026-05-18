@@ -7,6 +7,26 @@ class CasaEnergyCard extends HTMLElement {
     this._lastRender = 0;
     this._animationFrame = null;
     this._initialized = false;
+    this._intersectionObserver = null;
+  }
+
+  connectedCallback() {
+    if (!this._intersectionObserver) {
+      this._intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              this._startAnimation();
+            } else {
+              this._stopAnimation();
+            }
+          });
+        },
+        { threshold: 0 }
+      );
+    }
+    this._intersectionObserver.observe(this);
+    this._startAnimation();
   }
 
   setConfig(config) {
@@ -796,7 +816,12 @@ class CasaEnergyCard extends HTMLElement {
 
   _startAnimation() {
     if (this._animationFrame) return;
+    if (!this.isConnected || !this._flowPaths) return;
     const animate = () => {
+      if (!this.isConnected) {
+        this._stopAnimation();
+        return;
+      }
       this._animateFlows();
       this._animationFrame = requestAnimationFrame(animate);
     };
@@ -823,6 +848,14 @@ class CasaEnergyCard extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._stopAnimation();
+    if (this._intersectionObserver) {
+      this._intersectionObserver.disconnect();
+      this._intersectionObserver = null;
+    }
+  }
+
+  _stopAnimation() {
     if (this._animationFrame) {
       cancelAnimationFrame(this._animationFrame);
       this._animationFrame = null;
