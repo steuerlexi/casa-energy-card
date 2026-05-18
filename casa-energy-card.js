@@ -291,14 +291,25 @@ class CasaEnergyCard extends HTMLElement {
     circle.setAttribute('stroke-width', '2');
     g.appendChild(circle);
 
-    const iconText = document.createElementNS(ns, 'text');
-    iconText.setAttribute('text-anchor', 'middle');
-    iconText.setAttribute('dy', '5');
-    iconText.setAttribute('font-size', '20');
-    iconText.textContent = this._getIconChar(icon);
-    iconText.setAttribute('fill', color);
-    iconText.style.pointerEvents = 'none';
-    g.appendChild(iconText);
+    const fo = document.createElementNS(ns, 'foreignObject');
+    fo.setAttribute('x', '-16');
+    fo.setAttribute('y', '-16');
+    fo.setAttribute('width', '32');
+    fo.setAttribute('height', '32');
+    const iconDiv = document.createElement('div');
+    iconDiv.style.width = '32px';
+    iconDiv.style.height = '32px';
+    iconDiv.style.display = 'flex';
+    iconDiv.style.alignItems = 'center';
+    iconDiv.style.justifyContent = 'center';
+    const iconEl = document.createElement('ha-icon');
+    iconEl.setAttribute('icon', this._getOpenMojiIcon(icon));
+    iconEl.style.width = '28px';
+    iconEl.style.height = '28px';
+    iconEl.style.color = color;
+    iconDiv.appendChild(iconEl);
+    fo.appendChild(iconDiv);
+    g.appendChild(fo);
 
     const labelText = document.createElementNS(ns, 'text');
     labelText.setAttribute('text-anchor', 'middle');
@@ -354,14 +365,25 @@ class CasaEnergyCard extends HTMLElement {
     rect.setAttribute('stroke-width', '2');
     g.appendChild(rect);
 
-    const iconText = document.createElementNS(ns, 'text');
-    iconText.setAttribute('text-anchor', 'middle');
-    iconText.setAttribute('dy', '5');
-    iconText.setAttribute('font-size', '20');
-    iconText.textContent = this._getIconChar('mdi:current-ac');
-    iconText.setAttribute('fill', this._config.colors.inverter);
-    iconText.style.pointerEvents = 'none';
-    g.appendChild(iconText);
+    const fo = document.createElementNS(ns, 'foreignObject');
+    fo.setAttribute('x', '-16');
+    fo.setAttribute('y', '-16');
+    fo.setAttribute('width', '32');
+    fo.setAttribute('height', '32');
+    const iconDiv = document.createElement('div');
+    iconDiv.style.width = '32px';
+    iconDiv.style.height = '32px';
+    iconDiv.style.display = 'flex';
+    iconDiv.style.alignItems = 'center';
+    iconDiv.style.justifyContent = 'center';
+    const iconEl = document.createElement('ha-icon');
+    iconEl.setAttribute('icon', this._getOpenMojiIcon('mdi:current-ac'));
+    iconEl.style.width = '28px';
+    iconEl.style.height = '28px';
+    iconEl.style.color = this._config.colors.inverter;
+    iconDiv.appendChild(iconEl);
+    fo.appendChild(iconDiv);
+    g.appendChild(fo);
 
     const statusText = document.createElementNS(ns, 'text');
     statusText.setAttribute('text-anchor', 'middle');
@@ -377,23 +399,23 @@ class CasaEnergyCard extends HTMLElement {
     return g;
   }
 
-  _getIconChar(iconName) {
+  _getOpenMojiIcon(iconName) {
     const iconMap = {
-      'mdi:solar-power': '☀️',
-      'mdi:solar-panel': '☀️',
-      'mdi:transmission-tower': '⚡',
-      'mdi:home-lightning-bolt': '🏠',
-      'mdi:current-ac': '🔌',
-      'mdi:battery': '🔋',
-      'mdi:battery-charging': '⚡',
-      'mdi:air-conditioner': '❄️',
-      'mdi:monitor': '🖥️',
-      'mdi:water-boiler': '♨️',
-      'mdi:tumble-dryer': '👕',
-      'mdi:garage': '🚗',
-      'mdi:tree-outline': '🌳'
+      'mdi:solar-power': 'openmoji:2600',
+      'mdi:solar-panel': 'openmoji:2600',
+      'mdi:transmission-tower': 'openmoji:26a1',
+      'mdi:home-lightning-bolt': 'openmoji:1f3e0',
+      'mdi:current-ac': 'openmoji:1f50c',
+      'mdi:battery': 'openmoji:1f50b',
+      'mdi:battery-charging': 'openmoji:1f50b',
+      'mdi:air-conditioner': 'openmoji:2744',
+      'mdi:monitor': 'openmoji:1f5a5',
+      'mdi:water-boiler': 'openmoji:2668',
+      'mdi:tumble-dryer': 'openmoji:1f455',
+      'mdi:garage': 'openmoji:1f698',
+      'mdi:tree-outline': 'openmoji:1f333'
     };
-    return iconMap[iconName] || '⬤';
+    return iconMap[iconName] || 'mdi:help-circle';
   }
 
   _drawFlowPaths(svg, ns) {
