@@ -445,53 +445,62 @@ class CasaEnergyCard extends HTMLElement {
     const c = this._config.colors;
     const paths = {};
 
-    // PV Main -> Inverter
+    // All paths use explicit cubic-bezier control points to avoid crossings.
+    // Signature: (svg, ns, x1, y1, x2, y2, gradientId, arrowColor, id, dashArray, cp1x, cp1y, cp2x, cp2y)
+
+    // 1. PV Main -> Inverter (horizontal first)
     paths.pvMainToInv = this._createFlowPath(svg, ns, 108, 60, 360, 90, 'grad-solar', c.solar, 'flow-pv-main');
 
-    // PV BKW -> Inverter
-    paths.pvBkwToInv = this._createFlowPath(svg, ns, 108, 180, 360, 150, 'grad-solar-bkw', c.solar_bkw, 'flow-pv-bkw');
+    // 2. PV BKW -> Inverter (horizontal, slightly above BKW so it doesn't cross B2500 charge paths)
+    paths.pvBkwToInv = this._createFlowPath(svg, ns, 80, 170, 360, 150, 'grad-solar-bkw', c.solar_bkw, 'flow-pv-bkw', null, 220, 170, 220, 150);
 
-    // Inverter -> Grid (export)
+    // 3. Inverter -> Grid (export, horizontal first)
     paths.invToGrid = this._createFlowPath(svg, ns, 440, 90, 692, 60, 'grad-grid-export', c.grid_export, 'flow-grid');
 
-    // Grid -> Inverter (import) - reverse direction, separate path
-    paths.gridToInv = this._createFlowPath(svg, ns, 692, 60, 440, 90, 'grad-grid-import', c.grid_import, 'flow-grid-import', null, true);
+    // 4. Grid -> Inverter (import, horizontal first reverse)
+    paths.gridToInv = this._createFlowPath(svg, ns, 692, 60, 440, 90, 'grad-grid-import', c.grid_import, 'flow-grid-import', null, 566, 60, 566, 90);
 
-    // Inverter -> House
+    // 5. Inverter -> House (horizontal first)
     paths.invToHouse = this._createFlowPath(svg, ns, 440, 150, 692, 180, 'grad-consumption', c.consumption, 'flow-house');
 
-    // Inverter -> Batteries (charge paths)
+    // 6. Inverter -> Sonnenbatterie (charge: down first at x=380, then left to battery)
     if (this._config.show_sonnenbatterie) {
-      paths.invToBatMain = this._createFlowPath(svg, ns, 400, 150, 280, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-main');
-    }
-    // B2500 charge from BKW (AC-coupled, dashed lines)
-    if (this._config.show_b2500_baab) {
-      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 106, 180, 400, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1', '8, 4', true);
-    }
-    if (this._config.show_b2500_b9f4) {
-      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 110, 180, 520, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2', '8, 4', true);
+      paths.invToBatMain = this._createFlowPath(svg, ns, 380, 150, 260, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-main', null, 380, 250, 260, 250);
     }
 
-    // Battery discharge -> Inverter (B2500 discharge directly to House, AC-coupled)
+    // 7. Sonnenbatterie -> Inverter (discharge: left first at x=200, then up — avoids crossing charge path)
     if (this._config.show_sonnenbatterie) {
-      paths.batMainToInv = this._createFlowPath(svg, ns, 280, 360, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out');
+      paths.batMainToInv = this._createFlowPath(svg, ns, 260, 360, 380, 140, 'grad-battery-discharge', c.battery_discharge, 'flow-bat-main-out', null, 200, 360, 200, 140);
     }
+
+    // 8. BKW -> B2500-1 (charge: down first at x=60 to y=260, then right to battery)
     if (this._config.show_b2500_baab) {
-      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 360, 692, 210, 'grad-battery-discharge-b2500-1', c.battery_discharge_b2500, 'flow-bat-b2500-1-out', '8, 4');
+      paths.invToBatB2500_1 = this._createFlowPath(svg, ns, 60, 190, 400, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-1', '8, 4', 60, 260, 400, 260);
     }
+
+    // 9. BKW -> B2500-2 (charge: down first at x=100 to y=280, then right — stays below B2500-1 path)
     if (this._config.show_b2500_b9f4) {
-      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 360, 692, 150, 'grad-battery-discharge-b2500-2', c.battery_discharge_b2500, 'flow-bat-b2500-2-out', '8, 4');
+      paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 100, 190, 520, 360, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2', '8, 4', 100, 280, 520, 280);
+    }
+
+    // 10. B2500-1 -> Haus (discharge: right first to x=500, then up)
+    if (this._config.show_b2500_baab) {
+      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 360, 692, 210, 'grad-battery-discharge-b2500-1', c.battery_discharge_b2500, 'flow-bat-b2500-1-out', '8, 4', 500, 360, 500, 210);
+    }
+
+    // 11. B2500-2 -> Haus (discharge: right first to x=600, then up — stays to the right of B2500-1 path)
+    if (this._config.show_b2500_b9f4) {
+      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 360, 692, 150, 'grad-battery-discharge-b2500-2', c.battery_discharge_b2500, 'flow-bat-b2500-2-out', '8, 4', 600, 360, 600, 150);
     }
 
     this._flowPaths = paths;
   }
 
-  _createFlowPath(svg, ns, x1, y1, x2, y2, gradientId, arrowColor, id, dashArray = null, verticalFirst = false) {
+  _createFlowPath(svg, ns, x1, y1, x2, y2, gradientId, arrowColor, id, dashArray = null, cp1x = null, cp1y = null, cp2x = null, cp2y = null) {
     const path = document.createElementNS(ns, 'path');
     let d;
-    if (verticalFirst) {
-      const midY = (y1 + y2) / 2;
-      d = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+    if (cp1x !== null) {
+      d = `M ${x1} ${y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`;
     } else {
       const midX = (x1 + x2) / 2;
       d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
@@ -509,32 +518,37 @@ class CasaEnergyCard extends HTMLElement {
     path.style.pointerEvents = 'none';
     svg.insertBefore(path, svg.firstChild.nextSibling);
 
-    // Mid-path arrow
-    const arrow = this._createMidArrow(svg, ns, x1, y1, x2, y2, arrowColor, id + '-arrow');
-
-    return { path, arrow };
-  }
-
-  _createMidArrow(svg, ns, x1, y1, x2, y2, color, id) {
-    const midX = (x1 + x2) / 2;
-    const midY = (y1 + y2) / 2;
-    const dx = x2 - x1;
-    const dy = 2 * (y2 - y1);
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    // Mid-path arrow — position at t=0.5 of the bezier curve
+    let arrowX, arrowY, angle;
+    if (cp1x !== null) {
+      const t = 0.5;
+      const mt = 1 - t;
+      arrowX = mt * mt * mt * x1 + 3 * mt * mt * t * cp1x + 3 * mt * t * t * cp2x + t * t * t * x2;
+      arrowY = mt * mt * mt * y1 + 3 * mt * mt * t * cp1y + 3 * mt * t * t * cp2y + t * t * t * y2;
+      const dx = 3 * mt * mt * (cp1x - x1) + 6 * mt * t * (cp2x - cp1x) + 3 * t * t * (x2 - cp2x);
+      const dy = 3 * mt * mt * (cp1y - y1) + 6 * mt * t * (cp2y - cp1y) + 3 * t * t * (y2 - cp2y);
+      angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    } else {
+      arrowX = (x1 + x2) / 2;
+      arrowY = (y1 + y2) / 2;
+      const dx = x2 - x1;
+      const dy = 2 * (y2 - y1);
+      angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    }
 
     const g = document.createElementNS(ns, 'g');
-    g.setAttribute('transform', `translate(${midX}, ${midY}) rotate(${angle})`);
-    g.setAttribute('id', id);
+    g.setAttribute('transform', `translate(${arrowX}, ${arrowY}) rotate(${angle})`);
+    g.setAttribute('id', id + '-arrow');
     g.style.opacity = '0';
     g.style.pointerEvents = 'none';
 
     const polygon = document.createElementNS(ns, 'polygon');
     polygon.setAttribute('points', '-6,-4 6,0 -6,4');
-    polygon.setAttribute('fill', color);
+    polygon.setAttribute('fill', arrowColor);
     g.appendChild(polygon);
 
     svg.insertBefore(g, svg.firstChild.nextSibling);
-    return g;
+    return { path, arrow: g };
   }
 
   _drawBatteryBoxes(svg, ns) {
