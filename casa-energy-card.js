@@ -483,14 +483,14 @@ class CasaEnergyCard extends HTMLElement {
       paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 100, 190, 520, 330, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2', '8, 4', 100, 280, 520, 280);
     }
 
-    // 10. B2500-1 -> Grid (discharge: starts at top of battery y=330, curves up-right to Grid)
+    // 10. B2500-1 -> Inverter (discharge: starts at top of battery y=330, curves up-left to Inverter bottom)
     if (this._config.show_b2500_baab) {
-      paths.batB2500_1ToGrid = this._createFlowPath(svg, ns, 400, 330, 720, 60, 'grad-battery-discharge-b2500-1', c.battery_discharge_b2500, 'flow-bat-b2500-1-out', '8, 4', 550, 330, 650, 60);
+      paths.batB2500_1ToInv = this._createFlowPath(svg, ns, 400, 330, 400, 150, 'grad-battery-discharge-b2500-1', c.battery_discharge_b2500, 'flow-bat-b2500-1-out', '8, 4', 460, 330, 460, 150);
     }
 
-    // 11. B2500-2 -> Grid (discharge: starts at top of battery y=330, curves up-right to Grid)
+    // 11. B2500-2 -> Inverter (discharge: starts at top of battery y=330, curves up-left to Inverter bottom)
     if (this._config.show_b2500_b9f4) {
-      paths.batB2500_2ToGrid = this._createFlowPath(svg, ns, 520, 330, 720, 60, 'grad-battery-discharge-b2500-2', c.battery_discharge_b2500, 'flow-bat-b2500-2-out', '8, 4', 620, 330, 680, 60);
+      paths.batB2500_2ToInv = this._createFlowPath(svg, ns, 520, 330, 420, 150, 'grad-battery-discharge-b2500-2', c.battery_discharge_b2500, 'flow-bat-b2500-2-out', '8, 4', 560, 330, 480, 150);
     }
 
     this._flowPaths = paths;
