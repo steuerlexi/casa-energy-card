@@ -44,7 +44,7 @@ class CasaEnergyCard extends HTMLElement {
       min_flow_watts: 10,
       colors: {
         solar: '#F6DF28',
-        solar_bkw: '#ff6b35',
+        solar_bkw: '#F6DF28',
         grid_export: '#4caf50',
         grid_import: '#f44336',
         battery_charge: '#4caf50',
