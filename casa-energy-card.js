@@ -483,19 +483,14 @@ class CasaEnergyCard extends HTMLElement {
       paths.invToBatB2500_2 = this._createFlowPath(svg, ns, 100, 190, 520, 330, 'grad-battery-charge', c.battery_charge, 'flow-bat-b2500-2', '8, 4', 100, 280, 520, 280);
     }
 
-    // 10. B2500-1 -> BKW (discharge: starts at top of battery y=330, goes up to BKW)
+    // 10. B2500-1 -> Grid (discharge: starts at top of battery y=330, curves up-right to Grid)
     if (this._config.show_b2500_baab) {
-      paths.batB2500_1ToBkw = this._createFlowPath(svg, ns, 400, 330, 80, 180, 'grad-battery-discharge-b2500-1', c.battery_discharge_b2500, 'flow-bat-b2500-1-out', '8, 4', 400, 250, 240, 180);
+      paths.batB2500_1ToGrid = this._createFlowPath(svg, ns, 400, 330, 720, 60, 'grad-battery-discharge-b2500-1', c.battery_discharge_b2500, 'flow-bat-b2500-1-out', '8, 4', 550, 330, 650, 60);
     }
 
-    // 11. B2500-2 -> BKW (discharge: starts at top of battery y=330, goes up to BKW)
+    // 11. B2500-2 -> Grid (discharge: starts at top of battery y=330, curves up-right to Grid)
     if (this._config.show_b2500_b9f4) {
-      paths.batB2500_2ToBkw = this._createFlowPath(svg, ns, 520, 330, 80, 180, 'grad-battery-discharge-b2500-2', c.battery_discharge_b2500, 'flow-bat-b2500-2-out', '8, 4', 520, 250, 300, 180);
-    }
-
-    // 12. BKW -> House (combined BKW output: PV + B2500 discharge)
-    if (this._config.show_b2500_baab || this._config.show_b2500_b9f4) {
-      paths.bkwToHouse = this._createFlowPath(svg, ns, 108, 180, 692, 180, 'grad-consumption', c.consumption, 'flow-bkw-house');
+      paths.batB2500_2ToGrid = this._createFlowPath(svg, ns, 520, 330, 720, 60, 'grad-battery-discharge-b2500-2', c.battery_discharge_b2500, 'flow-bat-b2500-2-out', '8, 4', 620, 330, 680, 60);
     }
 
     this._flowPaths = paths;
@@ -875,11 +870,6 @@ class CasaEnergyCard extends HTMLElement {
     this._flowSpeeds['flow-bat-b2500-2'] = this._calcFlowSpeed(Math.abs(batB2500_2));
     this._flowSpeeds['flow-bat-b2500-2-out'] = this._calcFlowSpeed(Math.abs(batB2500_2));
 
-    // BKW -> House (combined B2500 discharge output to house)
-    const bkwTotalDischarge = (batB2500_1 > minW ? batB2500_1 : 0) + (batB2500_2 > minW ? batB2500_2 : 0);
-    this._setFlowVisibility('flow-bkw-house', bkwTotalDischarge > minW);
-    this._setFlowWidth('flow-bkw-house', bkwTotalDischarge);
-    this._flowSpeeds['flow-bkw-house'] = this._calcFlowSpeed(bkwTotalDischarge);
   }
 
   _calcFlowSpeed(powerWatts) {
