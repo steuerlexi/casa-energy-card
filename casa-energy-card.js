@@ -820,10 +820,13 @@ class CasaEnergyCard extends HTMLElement {
     this._setFlowWidth('flow-pv-main', pvMain);
     this._flowSpeeds['flow-pv-main'] = this._calcFlowSpeed(pvMain);
 
-    // PV BKW -> Inverter
-    this._setFlowVisibility('flow-pv-bkw', pvBkw > minW);
-    this._setFlowWidth('flow-pv-bkw', pvBkw);
-    this._flowSpeeds['flow-pv-bkw'] = this._calcFlowSpeed(pvBkw);
+    // PV BKW -> Inverter (subtract B2500 battery charging from total BKW output)
+    const bat1Charge = batB2500_1 < 0 ? Math.abs(batB2500_1) : 0;
+    const bat2Charge = batB2500_2 < 0 ? Math.abs(batB2500_2) : 0;
+    const bkwToInv = Math.max(0, pvBkw - bat1Charge - bat2Charge);
+    this._setFlowVisibility('flow-pv-bkw', bkwToInv > minW);
+    this._setFlowWidth('flow-pv-bkw', bkwToInv);
+    this._flowSpeeds['flow-pv-bkw'] = this._calcFlowSpeed(bkwToInv);
 
     // Grid flows
     const isExport = grid > minW;
